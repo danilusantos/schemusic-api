@@ -1,0 +1,493 @@
+CENTRO ESTADUAL DE EDUCAÇÃO TECNOLÓGICA PAULA SOUZA
+Faculdade de Tecnologia da Praia Grande
+Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas.
+PROJETO: DESENVOLVIMENTO DE UMA PLATAFORMA DE AGENDAMENTO E CONTRATAÇÃO MUSICAL INTEGRADA COM O GOOGLE AGENDA (SCHEMUSIC)
+DANILO NASCIMENTO DOS SANTOS
+G
+
+
+Praia Grande
+2024
+
+
+DANILO NASCIMENTO DOS SANTOS
+JULIANA ALVES DE AGUIAR
+WELLINARA DE ALMEIDA OLIVEIRA NADDEO
+
+
+
+
+
+
+
+PROJETO: DESENVOLVIMENTO DE UMA PLATAFORMA DE AGENDAMENTO E CONTRATAÇÃO MUSICAL INTEGRADA COM O GOOGLE AGENDA (SCHEMUSIC)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Praia Grande
+2024
+
+SANTOS; TAVARES; NADDEO
+  Desenvolvimento de uma plataforma de gerenciamento de eventos que permite a clientes cadastrarem eventos, contratar artistas, avaliar serviços, e realizar pagamentos de planos. Além disso, artistas podem gerenciar seus cadastros, localizar eventos, e aceitar contratos. Administradores têm a capacidade de gerenciar planos de serviços, contratos, avaliações e eventos submetidos. O objetivo principal é facilitar a interação entre clientes e artistas, garantindo uma experiência organizada e eficiente na administração de eventos.
+Danilo Nascimento Dos Santos
+Juliana Alves de Aguiar
+Wellinara De Almeida Oliveira Naddeo, 2024.
+Total de folhas: 41 p.41 colocar no final quantas pág.
+Orientador: Marcelo Pereira de Andrade. Local: Faculdade de Tecnologia da
+Baixada Santista (FATEC Praia Grande)
+1. Software. 2. Otimização. 3. Tecnologia.
+Relatório técnico (Trabalho de Conclusão de Curso) – Centro de Educação Tecnológica Paula
+Souza, Faculdade de Tecnologia da Baixada Santista (FATEC Praia Grande), Curso Superior de
+Tecnologia em Análise e Desenvolvimento de Sistemas.
+
+
+ 
+
+DANILO NASCIMENTO DOS SANTOS
+JULIANA ALVES DE AGUIAR
+WELLINARA DE ALMEIDA OLIVEIRA NADDEO
+
+PROJETO: DESENVOLVIMENTO DE UMA PLATAFORMA DE AGENDAMENTO E CONTRATAÇÃO MUSICAL INTEGRADA COM O GOOGLE AGENDA (SCHEMUSIC)
+
+
+
+
+
+Aprovado em: ______ de ___________ de 20___.
+
+Banca Examinadora
+
+______________________________
+Prof. Dr. NOME DO ORIENTADOR
+Faculdade de Tecnologia da Praia Grande (FATEC)
+
+________________________________
+Nome
+Faculdade de Tecnologia da Praia Grande (FATEC)
+
+_________________________________
+Nome
+Faculdade de Tecnologia da Praia Grande (FATEC)
+RESUMO 
+Este trabalho apresenta o desenvolvimento de uma plataforma digital inovadora para o gerenciamento de eventos e contratação de músicos. O sistema permite que contratantes cadastrem eventos, contratem artistas, avaliem serviços e gerenciem suas agendas por meio da integração com o Google Agenda, facilitando a coordenação de horários e reduzindo conflitos. Músicos podem gerenciar seus perfis, localizar eventos e aceitar ou recusar contratos, enquanto administradores têm a capacidade de gerenciar planos de serviços, contratos, avaliações e eventos cadastrados. A plataforma inclui filtros de pesquisa avançados, como localização, estilo musical e avaliações, proporcionando uma experiência personalizada e confiável para os usuários. Além disso, músicos emergentes recebem destaque especial, ampliando sua visibilidade no mercado. Com um sistema de gestão de contratos e regras claras de cancelamento, a plataforma assegura transparência e segurança para todas as partes envolvidas. O objetivo principal é promover uma interação eficiente e organizada entre clientes e artistas, transformando o processo de contratação de músicos e a administração de eventos musicais.
+Palavras-chave: Sistema de gerenciamento, plataforma de eventos, clientes, artistas, administradores, interação, eficiência.
+
+ABSTRACT
+This work presents the development of an innovative digital platform for event management and musician hiring. The system allows clients to register events, hire artists, review services, and manage schedules through integration with Google Calendar, simplifying time coordination and reducing scheduling conflicts. Musicians can manage their profiles, find events, and accept or decline contracts, while administrators can manage service plans, contracts, reviews, and submitted events. The platform features advanced search filters such as location, music genre, and user ratings, offering a personalized and reliable experience for users. Emerging musicians are specially highlighted, increasing their visibility in the market. With a contract management system and clear cancellation policies, the platform ensures transparency and security for all parties involved. The main goal is to promote efficient and organized interaction between clients and artists, transforming the musician hiring process and the management of musical events.
+Keywords: Management system, event platform, clients, artists, administrators, interaction, efficiency.
+
+LISTA DE FIGURAS
+Figura 1: Diagrama de Caso de Uso;
+Figura 2: Diagrama de Classe;
+Figura 3: Diagrama de Banco de Dados;
+Figura 4: Esquema de Cores Para Produção do Projeto;
+Figura 5: Principal Logo do Sistema;
+Figura 6: Principal Icone do Sistema;
+Figura 7: Tela de Login Para o Membro (Artista / Contratante);
+Figura 8: Tela Inicial / Dashboard da Área de Membros;
+Figura 9: Tela Inicial com Informações do Usuário Logado;
+Figura 10: Tela de todos os eventos registrados e aprovados no sistema;
+Figura 11: Tela de Artistas Registrados e Ativos no Sistema;
+Figura 12: Tela do Login do Administrador No Sistema;
+Figura 13 Tela da Dashboard do Administrador Logado no Sistema;
+
+LISTA DE TABELAS
+Tabela 1: Tabela de Levantamento de Requisitos Funcionais e Não Funcionais;
+
+LISTA DE ABREVIATURAS E SIGLAS
+Remover caso não haja essa lista na entrega final
+SUMÁRIO
+Escopo do projeto	12
+JUSTIFICATIVA DO TEMA	12
+PROBLEMAS IDENTIFICADOS........................................................................................13
+SOLUÇÃO DO PROBLEMA.	13
+HIPÓTESES OU SUPOSIÇÕES	13
+DIRETRIZES DE TESTES	13
+OBJETIVOS	14
+Objetivos Gerais	14
+Objetivos Específicos	14
+METODOLOGIA	15
+Passos Metodológicos	15
+INFORMAÇÕES TÉCNICAS	16
+Versões	16
+Levantamento de Requisitos - Funcionais e Não Funcionais	17
+Diagrama de Caso de Uso	26
+Diagrama de Classe	28
+Diagrama de Banco de Dados	29
+Prototipação	31
+ESQUEMAS DE CORES	32
+LOGOTIPO	33
+Logomarca	33
+Icone	33
+TELAS	34
+Tela de Membros - Login	34
+Tela de Membros - Dashboard	35
+Tela de Membros - Eventos	37
+Tela de Membros - Artistas	38
+Tela de administrador - Login	39
+Tela de administrador - dashboard	40
+CONCLUSÃO	41
+
+
+
+Escopo do projeto
+A função deste projeto é desenvolver uma plataforma digital inovadora que simplifique a contratação de músicos, o agendamento de eventos e a busca por locais adequados. A plataforma foi projetada para conectar músicos e contratantes de forma eficiente, utilizando a integração com o Google Agenda para coordenar agendas, evitando conflitos de horário e facilitando o agendamento em tempo real.
+A interface da plataforma será amigável e intuitiva, permitindo que usuários encontrem rapidamente os profissionais que desejam contratar. Músicos e bandas terão um espaço dedicado para promover seus trabalhos, incluindo a exibição de suas habilidades e portfólios. Por outro lado, os contratantes poderão fazer suas escolhas com base em filtros avançados, como localização, estilo musical, orçamento, popularidade e disponibilidade, além de avaliações deixadas por outros usuários, garantindo maior segurança na decisão.
+Para garantir uma experiência confiável e segura, serão implementadas regras claras de conduta e mecanismos de resolução de problemas, incluindo opções para suspensões e avaliações negativas em caso de conflitos. O sistema também oferecerá políticas detalhadas para cancelamentos e ajustes, com ambos os lados (músicos e contratantes) concordando com termos e condições claros antes da confirmação de qualquer serviço.
+Embora a plataforma não gerencie diretamente os pagamentos, ela será responsável por administrar reservas e facilitar a comunicação entre músicos e contratantes, oferecendo um ambiente seguro e organizado. Com essas funcionalidades, o projeto visa transformar a maneira como músicos e organizadores interagem, proporcionando uma experiência mais ágil, prática e confiável para todos os envolvidos no processo de contratação e organização de eventos musicais.
+
+JUSTIFICATIVA DO TEMA
+No mercado musical, é comum que empresas e organizadores de eventos busquem músicos para suas apresentações, enquanto artistas procuram oportunidades para promover seu trabalho. Escolhemos este tema porque acreditamos que a tecnologia pode oferecer soluções práticas e eficientes, facilitando a conexão entre contratantes e músicos.
+Este projeto propõe uma plataforma digital inovadora que promove uma comunicação transparente e eficaz entre músicos e empresas. A plataforma oferece aos artistas e bandas uma vitrine digital para divulgar seus talentos, tornando o processo de busca por músicos mais ágil e assertivo para os contratantes.
+A integração com o Google Agenda é um componente crucial, pois permite a sincronização em tempo real das agendas de músicos e organizadores, minimizando conflitos de horários e simplificando o processo de agendamento de apresentações. Isso garante que todos estejam cientes de seus compromissos e evita sobreposições indesejadas.
+Nosso compromisso com o desenvolvimento desta plataforma resulta em uma solução abrangente para os desafios atuais de contratação de músicos. O sistema visa oferecer um processo mais simples, eficaz e seguro, em que contratantes podem selecionar artistas com base em critérios claros, como avaliações de outros usuários e preferências específicas.
+Acreditamos que esta plataforma proporcionará uma experiência enriquecedora e produtiva para músicos e organizadores, superando os desafios de gestão de eventos e criando oportunidades no cenário musical. Nossa proposta é transformar a forma como essas interações ocorrem, promovendo maior organização, transparência e acessibilidade no setor.
+
+PROBLEMAS IDENTIFICADOS
+Durante a fase de análise de requisitos, foram identificados alguns desafios comuns no processo de contratação de músicos:
+Dificuldade na coordenação de horários: músicos e contratantes enfrentam dificuldades em alinhar suas agendas devido à falta de uma ferramenta eficiente de gerenciamento de tempo, resultando em cancelamentos ou conflitos de horários.
+Falta de transparência nas avaliações: contratantes muitas vezes têm dificuldades em encontrar informações confiáveis sobre a qualidade dos músicos, o que pode resultar em experiências insatisfatórias.
+Falta de visibilidade para músicos emergentes: muitos músicos, especialmente os emergentes, encontram barreiras para promover seus talentos e conseguir oportunidades de trabalho, o que limita seu crescimento profissional.
+Complexidade na gestão de contratos: a ausência de um sistema centralizado para acordos e contratos entre músicos e contratantes resulta em confusões e disputas relacionadas a cancelamentos e alterações nos eventos.
+SOLUÇÃO DO PROBLEMA.
+Integração com Google Agenda: A solução para os conflitos de horário é a integração direta com o Google Agenda. Isso permitirá a visualização em tempo real das disponibilidades dos músicos e facilitadores, possibilitando ajustes automáticos nas agendas e garantindo que os eventos sejam organizados de forma eficaz.
+Sistema de Avaliações e Filtros: Implementar um sistema de avaliações dos músicos por parte dos contratantes, que permita filtrar as opções com base em avaliações anteriores, garantindo maior transparência no processo de contratação. Além disso, o sistema incluirá filtros de pesquisa por estilo musical, localização e disponibilidade, facilitando a seleção.
+Promoção de Músicos Emergentes: A plataforma incluirá uma seção dedicada a novos talentos, permitindo que músicos emergentes ganhem visibilidade por meio de destaques na página principal e recomendações personalizadas para contratantes interessados em novos artistas.
+Gestão de Contratos e Políticas Claras: A criação de um sistema de contratos eletrônicos que formalize os acordos entre músicos e contratantes, com regras claras de cancelamento e penalidades, garantirá maior segurança para ambas as partes.
+
+HIPÓTESES OU SUPOSIÇÕES
+A plataforma digital proposta, com foco na pesquisa e recrutamento de músicos, tem como principal premissa melhorar substancialmente o processo de contratação de artistas e a organização de eventos musicais. A integração com o Google Agenda é considerada um diferencial estratégico, pois acreditamos que essa funcionalidade permitirá uma melhor coordenação de horários entre músicos e contratantes, reduzindo conflitos de agenda. Como consequência, esperamos que isso aumente a eficiência operacional na gestão de eventos e otimize a experiência tanto para os contratantes quanto para os músicos. Supomos ainda que a adoção de filtros personalizados, como localização, estilo musical e disponibilidade, tornará a busca por músicos mais ágil e precisa, facilitando o processo de decisão para os usuários.
+DIRETRIZES DE TESTES
+Realização de Testes com Usuários Reais: Conduzir testes práticos em estabelecimentos que regularmente contratam música ao vivo, avaliando a facilidade de uso e eficiência da plataforma em situações reais de contratação e organização de eventos.
+Métricas de Sucesso e Satisfação: Avaliar a eficiência da plataforma com base em métricas claras, como taxa de sucesso na contratação de músicos, tempo médio de resolução de conflitos de agenda e índices de satisfação dos usuários (músicos e contratantes).
+Transparência Através de Avaliações: Implementar e testar o sistema de avaliações mútuas entre músicos e contratantes, verificando se isso contribui para aumentar a transparência e a confiança na plataforma.
+Feedback Sobre Integração com o Google Agenda: Coletar feedback detalhado de contratantes e músicos sobre a funcionalidade de integração com o Google Agenda, analisando sua eficácia na redução de conflitos de horário e na coordenação de agendas.
+Aprimoramento da Interface com Base em Testes: Desenvolver e aprimorar a interface da plataforma de acordo com os resultados dos testes de usabilidade, garantindo que ela seja intuitiva e atenda às necessidades dos diferentes perfis de usuários.
+Avaliação de Funções Sociais: Testar a funcionalidade de rede social dentro da plataforma para medir sua utilidade no engajamento entre músicos e contratantes, promovendo uma maior conexão e visibilidade dos artistas.
+Com essas diretrizes de testes, esperamos não apenas simplificar e otimizar o processo de recrutamento de músicos, mas também criar uma experiência mais transparente, eficiente e diversificada no contexto da organização de eventos musicais. A plataforma será constantemente ajustada com base nos dados coletados, visando alcançar um desempenho superior e satisfatório para todos os envolvidos.
+
+OBJETIVOS
+Objetivos Gerais
+Desenvolver uma plataforma digital inovadora e abrangente que facilite a contratação de artistas musicais e a organização de eventos, oferecendo uma experiência fácil, segura e personalizada para os usuários. O objetivo é desenvolver uma ferramenta que permita a integração efetiva de artistas e organizadores de eventos, fornecendo recursos sofisticados para pesquisa, agendamento, gestão de reservas e comunicação. Isso ajudará a promover a descoberta de talentos musicais, a promoção de eventos de qualidade e a criação de experiências memoráveis para artistas e clientes. O objetivo do projeto é atender a uma variedade de públicos, incluindo artistas independentes e grandes empresas de eventos, ao mesmo tempo em que contribui para o crescimento e desenvolvimento sustentável do cenário musical e do mercado de eventos.
+Objetivos Específicos
+Realizar uma análise do sistema de mercado musical por meio de pesquisa abrangente onde serão coletados dados a respeito de como funciona a contratação de músicos e quais as principais dificuldades enfrentadas neste processo, utilizando insights para o processo de criação do App.
+Desenvolver um sistema que proporciona uma navegação fácil e intuitiva, facilitando a busca por profissionais com o perfil desejado pelo contratante. Na plataforma, o músico e/ou banda terão um espaço para divulgação do seu trabalho, podendo ainda o contratante obter auxílio na sua decisão de contratação baseada nas preferências e experiências de outros usuários finais.
+Criar mecanismos na plataforma que promovam a visibilidade de músicos emergentes, oferecendo oportunidades de exposição e contratação para talentos em ascensão.
+Implementar no sistema diversas formas de busca por filtro de funcionalidades, exemplo geolocalização, tipos de gênero musical, preço, profissionais famosos ou não e, disponibilidade de dias.
+Garantir a segurança e confiabilidade do sistema, gerando ao contratante e ao contratado garantias da contratação, como quebra de contrato e aplicação de multas.
+Integrar com o Google Agenda para permitir aos músicos e contratantes visualizarem e coordenarem suas agendas em tempo real, aliviando conflitos e facilitando o agendamento.
+Com estes objetivos específicos alcançados a plataforma aspira não apenas simplificar o processo de contratação de músicos, mas também de promover uma transformação positiva na experiência geral, impulsionando a eficiência, a transparência e a diversidade no cenário musical de eventos.
+METODOLOGIA
+A pesquisa exploratória que realizaremos com músicos, produtores e usuários ajudará a identificar os processos relacionados à contratação de músicos. Também coletaremos dados sobre a experiência dos usuários e percepções sobre a nova plataforma proposta.
+Passos Metodológicos
+Pesquisa Qualitativa e Quantitativa:
+Realizar entrevistas para usar formulários de perguntas que se concentram no processo atual de contratação de músicos, determinando onde e como esses grupos são contactados para solicitar serviços e quais métodos de comunicação são usados.
+Realizar pesquisas online além da pesquisa presencial com o objetivo de alcançar o maior número possível de pessoas envolvidas no processo de contratação. Essas pesquisas são distribuídas com o objetivo de coletar feedback quantitativo sobre a experiência do usuário, incluindo a facilidade de uso da plataforma, satisfação geral e sugestões de melhorias, usando protótipos e classificando os objetivos do usuário.
+Analisar qualitativamente para identificar padrões e temas emergentes em grupos focais e entrevistas por meio de técnicas de codificação de dados e análise temática. As ferramentas estatísticas, como médias, desvios padrão e testes de significância, serão usadas para analisar os dados quantitativos.
+Desenvolvimento da Plataforma:
+A plataforma será construída usando tecnologias atuais como PHP, Laravel, banco de dados relacional MySQL, Bootstrap para design visual (Front-End) e outras bibliotecas JavaScript, HTML e CSS disponíveis. As funções específicas serão implementadas de acordo com as melhores práticas de desenvolvimento de software.
+Testes e Ajustes:
+Será realizado um teste piloto com uma seleção específica de usuários antes do lançamento oficial para detectar possíveis problemas e implementar as correções necessárias. Após o lançamento, a plataforma será monitorada continuamente. Isso permitirá que os clientes cadastrados na plataforma recebam manutenção e atendimento, coletando dados sobre o uso e desempenho da plataforma em tempo real.
+INFORMAÇÕES TÉCNICAS
+Back-End: Laravel (PHP) - o Laravel será o principal responsável pelo gerenciamento das rotas, comunicação com o Banco de Dados e controle das regras de negócios do projeto;
+Banco de Dados: MySQL, garantindo armazenamento de dados confiável e escalável, juntamente com Redis para cache de alta performance e gerenciamento de sessões;
+Front-End: Laravel Blade, disponibilizada pelo próprio framework do Laravel (modelo padrão) e Bootstrap;
+Controle de Versão: Git, para gerenciamento de código e colaboração em equipe;
+Outros: HTML, CSS, Javascript, Ajax.
+Versões
+Laravel: 10.48.10;
+PHP: ^8.2;
+Banco de Dados: mysql-5.7.22;
+Composer: 2.7.4;
+Bootstrap: 5;
+Git: 2.43.0.
+Levantamento de Requisitos - Funcionais e Não Funcionais
+Esta seção apresenta os requisitos funcionais e não funcionais identificados para o desenvolvimento da plataforma de contratação de músicos e organização de eventos. Cada requisito é detalhado com uma descrição específica e classificado conforme seu tipo.
+
+Tabela 1 – Tabela de Levantamento de Requisitos Funcionais e Não Funcionais
+N.º Sequencial
+Identificação do Requisito
+Descrição do Requisito
+Tipo Requisito
+REQ-001
+Gerenciamento de Artistas
+Os artistas devem criar perfis na plataforma, incluindo informações como gênero musical, repertório, experiência, preço por evento, fotos e vídeos de performances anteriores. Além de poderem realizar edições em seus cadastros
+Funcional
+REQ-002
+Gerenciamento de Organizadores de Eventos
+Os organizadores de eventos devem poder criar seus perfis na plataforma, incluindo informações como local, endereço, ramo, dados pessoais e fotos. Além de poderem realizar edições em seus cadastros
+Funcional
+REQ-003
+Pesquisa e Visualização de Artistas
+Os clientes devem poder pesquisar artistas com base em critérios como gênero musical, localização, disponibilidade e preço.
+A plataforma deve permitir a visualização de perfis detalhados de artistas, incluindo amostras de áudio, vídeo e avaliações de clientes anteriores.
+Funcional
+REQ-004
+Pesquisa e Visualização de eventos
+Os artistas podem pesquisar e visualizar eventos disponíveis na plataforma, utilizando filtros de localização geográfica, data, tipo de evento, gênero musical e preço.
+Funcional
+REQ-005
+Gerenciamento de Eventos
+Os organizadores de eventos devem ter a capacidade de gerenciar seus eventos na plataforma, podendo incluir informações como nome do evento, localização, data, horário, descrição, gênero musical, preço para a contratação e qualquer informação adicional relevante.
+Funcional
+REQ-006
+Upload de imagens 
+A plataforma deve permitir que o organizador faça upload de imagens e vídeos relacionados ao evento para atrair os usuários.
+Não Funcional
+REQ-007
+Integração com o Google Agenda
+Os artistas devem poder sincronizar automaticamente sua agenda na plataforma com o Google Agenda para evitar conflitos de horários.
+Os clientes devem poder visualizar a disponibilidade dos artistas em tempo real com base em suas agendas do Google Agenda
+Funcional
+REQ-008
+Aprovação de evento
+Após a publicação, o evento deve ser revisado e aprovado pela equipe de moderação da plataforma antes de se tornar visível para os usuários
+Funcional
+REQ-009
+Gerenciamento de Avaliações e Comentários
+Os clientes devem poder deixar avaliações e comentários sobre os artistas após a conclusão do evento, fornecendo feedback para futuros clientes
+Funcional
+REQ-010
+Pagamento por Planos de Acesso
+A plataforma deve oferecer diferentes planos de acesso, cada um com recursos e benefícios específicos para os usuários
+Funcional
+REQ-011
+Escolha do plano de acesso
+Os usuários devem poder escolher entre os planos disponíveis e realizar o pagamento para acessar os recursos correspondentes
+Funcional
+REQ-012
+Pagamento on-line
+O processo de pagamento deve ser integrado a sistemas de pagamento online seguros, permitindo que os usuários realizem transações utilizando métodos como cartão de crédito, PayPal, entre outros.
+Funcional
+REQ-013
+Permissão de acesso
+Após o pagamento bem-sucedido, os usuários devem ter acesso imediato aos recursos do plano escolhido, incluindo a capacidade de agendar eventos, visualizar perfis de artistas e utilizar outros recursos da plataforma conforme os termos do plano selecionado.
+Funcional
+REQ-014
+Gerenciamento dos Planos
+A plataforma deve oferecer funcionalidades para gerenciamento de assinaturas, permitindo que os usuários atualizem, cancelem ou alterem seus planos de acesso conforme necessário.
+Funcional
+REQ-015
+Gestão de plano Administrador
+Os administradores da plataforma devem ter acesso a um painel de controle para gerenciar planos de acesso, configurar preços, adicionar novos planos e monitorar o status das assinaturas dos usuários.
+Funcional
+REQ-016
+Notificações por E-mail e SMS
+A plataforma deve enviar notificações por e-mail e/ou SMS para confirmar reservas, lembretes de eventos e outras comunicações importantes entre artistas e clientes.
+Funcional
+REQ-017
+Suporte ao Cliente
+Deve haver um sistema de suporte ao cliente para auxiliar tanto os artistas quanto os clientes em caso de dúvidas, problemas técnicos ou conflitos durante o processo de agendamento e contratação.
+Funcional
+REQ-018
+Administração do Sistema
+Um painel de administração deve ser disponibilizado para gerenciar usuários, aprovar perfis de artistas, monitorar atividades, gerar relatórios e realizar outras tarefas administrativas.
+Funcional
+REQ-019
+Gestão de Contratos e Acordos
+A plataforma deve permitir que os usuários gerem contratos e acordos digitais entre os artistas e os organizadores de eventos, incluindo detalhes como termos de pagamento, responsabilidades e condições de cancelamento.
+Funcional
+REQ-020
+Integração com Redes Sociais
+Possibilitar a integração dos perfis dos músicos com suas redes sociais, permitindo que os contratantes tenham acesso a mais informações sobre o trabalho e a reputação dos profissionais
+Funcional
+REQ-021
+Funcionalidades de Mensagens e Comunicação
+A plataforma deve incluir recursos de mensagens e comunicação para facilitar a interação entre artistas e clientes, permitindo que discutam detalhes dos eventos, compartilhem arquivos e esclareçam dúvidas
+Funcional
+REQ-022
+Feedback e Avaliação do Evento
+Após a realização do evento, os clientes devem poder fornecer feedback e avaliações sobre a experiência, ajudando a melhorar a qualidade dos serviços oferecidos pelos artistas e organizadores de eventos
+Funcional
+REQ-023
+Sistema de Recomendação Personalizada
+Implementar um sistema de recomendação que sugira músicos com base nas preferências e histórico de contratação do usuário, aumentando a relevância das opções apresentadas.
+Funcional
+REQ-024
+Calendário de Disponibilidade dos Músicos
+Permitir que os músicos atualizem regularmente sua disponibilidade na plataforma, garantindo que apenas os períodos em que estão realmente disponíveis sejam exibidos para os contratantes.
+Funcional
+REQ-025
+Escopo de Atuação Geográfica
+Assegurar que a plataforma seja escalável o suficiente para atender a uma ampla variedade de locais geográficos, possibilitando a contratação de músicos em diferentes regiões e países
+Não Funcional
+REQ-026
+Performance de Busca Eficiente
+Garantir que o sistema de busca seja eficiente e rápido, mesmo ao lidar com grandes volumes de dados, para garantir uma experiência de usuário fluida e responsiva
+Não Funcional
+REQ-027
+Compliance com Regulamentação de Privacidade
+Cumprir com regulamentações de privacidade, como GDPR e LGPD, garantindo que os dados dos usuários sejam coletados, armazenados e utilizados de forma ética e legalmente conforme exigido por lei.
+Não Funcional
+REQ-028
+Estabilidade e Tolerância a Falhas
+Garantir que a plataforma seja altamente estável e tenha mecanismos de tolerância a falhas para lidar com picos de tráfego, minimizando assim o tempo de inatividade e as interrupções no serviço.
+Não Funcional
+REQ-029
+Desenvolvimento Sustentável
+O desenvolvimento da plataforma deve seguir práticas de desenvolvimento sustentável, minimizando o consumo de recursos e impactos ambientais sempre que possível
+Não Funcional
+REQ-030
+Compatibilidade
+A plataforma deve ser compatível com uma variedade de dispositivos e navegadores web, garantindo uma experiência consistente para os usuários, independentemente do dispositivo ou sistema operacional que estão utilizando.
+Não Funcional
+REQ-031
+Desempenho
+A plataforma deve ser capaz de lidar com um grande volume de acessos simultâneos e processar solicitações rapidamente, garantindo uma experiência de usuário fluida e sem interrupções.
+Não Funcional
+REQ-032
+Segurança
+O sistema deve implementar autenticação por meio de senhas seguras ou autenticação de dois fatores para garantir que apenas usuários autorizados tenham acesso aos dados dos usuários. Os dados devem ser armazenados de forma criptografada, incluindo informações de clientes e outros dados sensíveis.
+Não Funcional
+REQ-033
+Conformidade Legal
+A plataforma deve cumprir com regulamentações e padrões de segurança, privacidade e acessibilidade relevantes, garantindo que esteja em conformidade com as leis e normas aplicáveis
+Não Funcional
+REQ-034
+Disponibilidade
+A plataforma deve estar disponível e acessível para os usuários em tempo integral, com um tempo de inatividade mínimo planejado para manutenção e atualizações
+Não Funcional
+REQ-035
+Escalabilidade
+A arquitetura da plataforma deve ser projetada para escalar horizontalmente conforme necessário, permitindo que ela cresça para suportar um aumento no número de usuários e transações sem comprometer o desempenho.
+Não Funcional
+REQ-036
+Usabilidade
+A interface do usuário da plataforma deve ser intuitiva e fácil de usar, com navegação clara e instruções claras para ajudar os usuários a aproveitarem ao máximo os recursos disponíveis.
+Não Funcional
+REQ-037
+Flexibilidade
+Deve ser flexível o suficiente para se adaptar a diferentes contextos e tipos de eventos musicais, permitindo configurações personalizadas para diferentes tipos de artistas, eventos e clientes
+Não Funcional
+REQ-038
+Manutenibilidade
+O sistema deve ser modular e bem estruturado, facilitando a manutenção e evolução do código. Padrões de codificação e boas práticas devem ser seguidos para garantir a legibilidade e a facilidade de atualizações.
+Não Funcional
+REQ-039
+Backup e Recuperação
+Deve haver procedimentos eficazes de backup e recuperação de dados para garantir a integridade e disponibilidade dos dados dos usuários em caso de falhas ou desastres.
+Não Funcional
+
+
+
+Diagrama de Caso de Uso
+Figura 1 – Diagrama de Caso de Uso
+
+
+O diagrama de caso de uso mostra como as funcionalidades do sistema e os atores (cliente, artista e administrador) interagem entre si. É um modelo que mostra como vários usuários trabalham com o sistema para atingir um objetivo.
+Atores:
+Cliente: Pode cadastrar eventos, contratar artistas, fazer avaliações, entre outras ações.
+Artista: Pode localizar eventos, aceitar contratos, gerenciar seu cadastro.
+Administrador: Possui mais responsabilidades, como gerenciar planos de serviços, contratos, avaliações, aceitar ou rejeitar eventos, entre outras.
+
+Casos de Uso:
+Gerenciar Cadastro: Tanto clientes quanto artistas podem gerenciar suas informações de perfil.
+Entrar Sistema: Todos os usuários devem ser capazes de se autenticar no sistema.
+Cadastrar Evento: Cliente pode criar um evento, fornecendo detalhes necessários.
+Contratar Artista: Cliente pode contratar artistas para seus eventos.
+Fazer Avaliações: Cliente pode avaliar artistas após eventos.
+Aceitar/rejeitar evento: Administrador revisa e aprova ou rejeita eventos submetidos.
+Gerenciar Planos de Serviços: Administrador gerencia os diferentes planos disponíveis na plataforma.
+Gerenciar contratos: Administrador e artistas gerenciam os contratos de eventos.
+Gerenciar avaliações/comentários: Administrador supervisiona o feedback fornecido por clientes sobre artistas.
+
+Diagrama de Classe
+Figura 2 – Diagrama de Classe
+
+
+Diagrama de Banco de Dados
+Figura 3 – Diagrama de Banco de Dados
+
+O diagrama de banco de dados ER (Entidade-Relacionamento) representa a estrutura lógica do banco de dados, mostrando entidades, atributos e os relacionamentos entre as entidades.
+Entidades Principais:
+Users: Armazena informações dos usuários do sistema, incluindo clientes e artistas.
+Events: Armazena detalhes dos eventos criados pelos clientes.
+Contracts: Representa os contratos estabelecidos entre clientes e artistas.
+Plans: Detalha os diferentes planos de serviços disponíveis na plataforma.
+Ratings: Armazena avaliações feitas pelos clientes sobre os artistas.
+Supports: Gera registros de suporte ao cliente, ajudando na resolução de problemas e dúvidas.
+Relacionamentos:
+Cada User pode criar múltiplos Events.
+Cada Event pode estar associado a múltiplos Contracts.
+Ratings são ligados tanto aos Users quanto aos Contracts, refletindo o feedback dado por clientes após a realização de eventos.
+Plans são associados aos Users através de plan_user.
+Supports estão relacionados aos Users para fornecer assistência personalizada.
+
+Prototipação
+A prototipação é como desenhar um mapa antes de viajar: ela nos ajuda a imaginar o destino, planejar o caminho e antecipar obstáculos antes de continuar. Nossas ideias podem ser transformadas em realidade usando a combinação de criatividade e pragmatismo neste processo. Ao desenvolver protótipos, não apenas projetamos interfaces e telas, mas também simulamos como os usuários usarão nossa plataforma. Construir uma maquete antes de construir um edifício é como garantir que tudo funcione corretamente e seja fácil de usar. Como resultado, a prototipação não apenas economiza tempo e recursos, mas também garante que a experiência do usuário seja fácil de entender e satisfatória desde o início.
+ESQUEMAS DE CORES
+
+Figura 4 Esquema de Cores Para Produção do Projeto
+
+
+LOGOTIPO
+
+Logomarca
+Figura 5 Principal Logo do Sistema
+
+
+
+
+
+
+
+
+
+Icone
+Figura 6 Principal Icone do Sistema
+
+TELAS
+Tela de Membros - Login
+Tela de login para a entrada do membro que possui registro no site. Não necessariamente é necessário que ele tenha plano ativo no sistema.
+
+Figura 7 Tela de Login Para o Membro (Artista / Contratante)
+
+
+
+
+Tela de Membros - Dashboard
+Tela inicial da área de membros, com os 6 últimos eventos registrados e aprovados no sistema
+
+Figura 8 Tela Inicial / Dashboard da Área de Membros
+
+
+Tela inicial dos membros, com informações centralizadas sobre o uso do sistema e com um resumo dos dados mostrados. A Dashboard mostrada na imagem é meramente ilustrativa e não representa o produto.
+
+Figura 9 Tela Inicial com Informações do Usuário Logado
+
+Tela de Membros - Eventos
+Tela de eventos registrados e aprovados no site, onde todos podem pesquisar, ver mais detalhes dos eventos e se candidatarem (artistas), caso tenham atingido algum interesse.
+
+Figura 10 Tela de todos os eventos registrados e aprovados no sistema
+
+Tela de Membros - Artistas
+Tela de artistas registrados no site e com plano ativo. Aqui apenas o usuário membro do tipo Contratante / Empresa poderá acessar, procurar pelos artistas, ver mais informações e solicitar um agendamento com ele.
+
+Figura 11 Tela de Artistas Registrados e Ativos no Sistema
+
+Tela de administrador - Login
+Tela de login da área administrativa, onde somente o usuário administrador poderá acessar e gerenciar o sistema.
+
+Figura 12 Tela do Login do Administrador No Sistema
+
+Tela de administrador - dashboard
+Tela inicial e principal da área administrativa. Aqui, o usuário administrador poderá ter um resumo de como está o sistema e utilizar para tomadas de decisões (Dashboard).
+
+Figura 13 Tela da Dashboard do Administrador Logado no Sistema
+
+CONCLUSÃO
+Para ajudar músicos e organizadores de eventos a se comunicarem e se organizarem melhor, esta plataforma foi criada com o objetivo de preencher uma lacuna significativa no mercado musical. Uma experiência mais produtiva e feliz para todos será alcançada por meio da integração com o Google Agenda e da implementação de um sistema robusto de busca e agendamento. O projeto tem o potencial de mudar a maneira como músicos são contratados e como eventos são organizados, promovendo um cenário musical mais dinâmico e acessível por meio de uma abordagem centrada na usabilidade, segurança e transparência.

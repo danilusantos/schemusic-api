@@ -1,0 +1,530 @@
+{
+  "info": {
+    "name": "SCHEMUSIC - Administração",
+    "description": "Collection completa para testes da API administrativa do SCHEMUSIC\n\n**Setup Inicial:**\n1. Importe esta collection no Postman\n2. Crie um ambiente com variáveis:\n   - baseUrl: http://localhost:8080\n   - token: (será preenchido automaticamente após login)\n3. Execute primeiro: **Auth → Login Admin**\n4. O token será salvo automaticamente para os próximos requests\n\n**Fluxo de Testes Recomendado:**\n1. Login Admin (gera token)\n2. Usuários - Listar\n3. Usuários - Criar novo\n4. Roles - Listar\n5. Usuários - Vincular Roles\n6. Configs - Listar\n7. Listas de Acesso - Criar\n8. Logs - Listar",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Info - Status da API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration"]
+            },
+            "description": "Retorna informações básicas da API e status"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('token', response.token);",
+                  "    pm.environment.set('adminId', response.id_usuario);",
+                  "    pm.environment.set('adminNome', response.nome);",
+                  "    console.log('✓ Token salvo com sucesso');",
+                  "} else {",
+                  "    console.log('✗ Erro ao fazer login');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@schemusic.com\",\n  \"senha\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "login"]
+            },
+            "description": "Faz login com usuário admin e armazena automaticamente o token JWT.\n\nCredenciais padrão (seed initial):\n- Email: admin@schemusic.com\n- Senha: admin123\n\n**Auto-salvamento:** O script 'Tests' salva automaticamente o token em variável de ambiente"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Artista (Demo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"artista@schemusic.com\",\n  \"senha\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            },
+            "description": "Login público para artistas (demo/teste)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Usuários",
+      "item": [
+        {
+          "name": "Listar Todos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "users"]
+            },
+            "description": "Lista todos os usuários administrativos com paginação e filtros opcionais\n\n**Parâmetros query (opcionais):**\n- ativo: true|false\n- termo: busca no nome/email\n- roleId: filtra por ID de role"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Novo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Novo Admin\",\n  \"email\": \"novoadmin@schemusic.com\",\n  \"senha\": \"senhaSegura123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "users"]
+            },
+            "description": "Cria novo usuário administrativo\n\n**Validações:**\n- Nome: obrigatório, não-vazio\n- Email: obrigatório, formato válido, deve ser único\n- Senha: mínimo 6 caracteres\n\n**Auto-vinculação:** ROLE_ADMIN é vinculada automaticamente"
+          },
+          "response": []
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Admin Atualizado\",\n  \"email\": \"admin.atualizado@schemusic.com\",\n  \"senha\": \"novaSenha456!\",\n  \"ativo\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "users", "1"]
+            },
+            "description": "Edita dados do usuário (nome, email, ativo)\n\n**Nota:** Senha é opcional. Se omitida, mantém a atual"
+          },
+          "response": []
+        },
+        {
+          "name": "Vincular Roles",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleIds\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/users/2/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "users", "2", "roles"]
+            },
+            "description": "Substitui todas as roles de um usuário\n\n**Comportamento:**\n- Remove todas as roles antigas\n- Vincula as novas roles indicadas\n- Transação atômica (rollback em caso de erro)\n\n**Payload:**\n- roleIds: array de IDs de roles (ex: [1, 2] para ADMIN + ARTISTA)\n\n**Roles padrão:**\n- 1 = ADMIN\n- 2 = ARTISTA\n- 3 = EMPRESA"
+          },
+          "response": []
+        },
+        {
+          "name": "Inativar (Soft Delete)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/users/2/inativar",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "users", "2", "inativar"]
+            },
+            "description": "Marca usuário como inativo (soft delete)\n\n**Nota:** Não deleta dados, apenas marca ativo=false para rastreabilidade"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Roles",
+      "item": [
+        {
+          "name": "Listar Todas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "roles"]
+            },
+            "description": "Lista todas as roles (ADMIN, ARTISTA, EMPRESA, etc)"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Nova",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"GERENTE_EVENTOS\",\n  \"descricao\": \"Permissão para gerenciar eventos pendentes\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "roles"]
+            },
+            "description": "Cria nova role customizada\n\n**Validações:**\n- Nome: obrigatório, único, em UPPERCASE\n- Descrição: opcional"
+          },
+          "response": []
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"GERENTE_EVENTOS\",\n  \"descricao\": \"Permissão para gerenciar eventos e relatórios\",\n  \"ativo\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/roles/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "roles", "4"]
+            },
+            "description": "Edita dados da role"
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/roles/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "roles", "4"]
+            },
+            "description": "Deleta uma role\n\n**Proteção:** Não permite deletar se há usuários vinculados à role\n\n**Erro esperado:** 409 Conflict se há usuários ativos com essa role"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Usuários da Role",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/roles/1/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "roles", "1", "users"]
+            },
+            "description": "Lista todos os usuários vinculados a uma role específica\n\n**Path:** /roles/{roleId}/users"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Configurações do Sistema",
+      "item": [
+        {
+          "name": "Listar Todas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/system-configs",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "system-configs"]
+            },
+            "description": "Lista todas as configurações do sistema salvas no BD"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Nova",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chave\": \"SYSTEM_TIMEZONE\",\n  \"valor\": \"America/Sao_Paulo\",\n  \"descricao\": \"Timezone padrão para timestamps do sistema\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/system-configs",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "system-configs"]
+            },
+            "description": "Cria nova chave de configuração\n\n**Validações:**\n- chave: obrigatória, única, formato SNAKE_CASE\n- valor: obrigatório (string)\n- descricao: opcional\n\n**Configs padrão já criadas:**\n- SYSTEM_DEFAULT_EMAIL\n- SYSTEM_DEADLINE_DAYS"
+          },
+          "response": []
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valor\": \"America/Rio_Branco\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/system-configs/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "system-configs", "3"]
+            },
+            "description": "Atualiza valor de uma configuração existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/system-configs/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "system-configs", "3"]
+            },
+            "description": "Remove uma configuração do sistema"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Listas de Acesso (Whitelist/Blacklist)",
+      "item": [
+        {
+          "name": "Listar Todas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/access-lists",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "access-lists"]
+            },
+            "description": "Lista todos os itens de whitelist/blacklist\n\n**Parâmetros query (opcionais):**\n- tipoLista: WHITELIST | BLACKLIST\n- ativo: true | false"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar - Email Blacklist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoLista\": \"BLACKLIST\",\n  \"tipoAlvo\": \"EMAIL\",\n  \"valorAlvo\": \"spam@example.com\",\n  \"observacao\": \"Email de spam conhecida\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/access-lists",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "access-lists"]
+            },
+            "description": "Adiciona email à blacklist"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar - IP Whitelist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoLista\": \"WHITELIST\",\n  \"tipoAlvo\": \"IP\",\n  \"valorAlvo\": \"192.168.1.100\",\n  \"observacao\": \"IP do escritório principal\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/access-lists",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "access-lists"]
+            },
+            "description": "Adiciona IP à whitelist"
+          },
+          "response": []
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoLista\": \"BLACKLIST\",\n  \"tipoAlvo\": \"EMAIL\",\n  \"valorAlvo\": \"spam.novo@example.com\",\n  \"observacao\": \"Email atualizado\",\n  \"ativo\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/administration/access-lists/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "access-lists", "1"]
+            },
+            "description": "Atualiza item de acesso"
+          },
+          "response": []
+        },
+        {
+          "name": "Inativar Item",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/access-lists/1/inativar",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "access-lists", "1", "inativar"]
+            },
+            "description": "Marca item da lista como inativo (soft delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Logs de Acesso",
+      "item": [
+        {
+          "name": "Listar Recentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/administration/access-logs?limite=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["administration", "access-logs"],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "100",
+                  "description": "Quantidade máxima de logs a retornar (default: 200, max: 1000)"
+                }
+              ]
+            },
+            "description": "Lista logs de acesso HTTP mais recentes\n\n**Parâmetros:**\n- limite: quantidade máxima de registros (default=200, máx=1000)\n\n**Dados capturados por request:**\n- ID único do log\n- Método HTTP (GET, POST, PUT, DELETE, etc)\n- Caminho da requisição (path)\n- IP do cliente\n- ID do usuário autenticado\n- Status HTTP retornado\n- Data/horário"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "description": "URL base da API",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT Token (preenchido automaticamente após login)",
+      "type": "string"
+    },
+    {
+      "key": "adminId",
+      "value": "",
+      "description": "ID do admin logado",
+      "type": "string"
+    },
+    {
+      "key": "adminNome",
+      "value": "",
+      "description": "Nome do admin logado",
+      "type": "string"
+    }
+  ]
+}
