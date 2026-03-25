@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class AcessoSiteLogDAO {
@@ -113,6 +115,50 @@ public class AcessoSiteLogDAO {
             return 0L;
         } catch (SQLException ex) {
             throw new IllegalStateException("Erro ao contar logs por janela de tempo", ex);
+        }
+    }
+
+    public Map<String, Long> contarPorDiaUltimosDias(int diasParaTras) {
+        String sql = "SELECT DATE(data_acesso) AS referencia, COUNT(*) AS total "
+                + "FROM ACESSO_SITE_LOG "
+                + "WHERE data_acesso >= DATE_SUB(CURDATE(), INTERVAL ? DAY) "
+                + "GROUP BY DATE(data_acesso)";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, diasParaTras);
+            Map<String, Long> dados = new HashMap<>();
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    String referencia = rs.getString("referencia");
+                    long total = rs.getLong("total");
+                    dados.put(referencia, total);
+                }
+            }
+            return dados;
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Erro ao agregar logs por dia", ex);
+        }
+    }
+
+    public Map<String, Long> contarPorMesUltimosMeses(int quantidadeMeses) {
+        String sql = "SELECT DATE_FORMAT(data_acesso, '%Y-%m') AS referencia, COUNT(*) AS total "
+                + "FROM ACESSO_SITE_LOG "
+                + "WHERE data_acesso >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL ? MONTH), '%Y-%m-01') "
+                + "GROUP BY DATE_FORMAT(data_acesso, '%Y-%m')";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, quantidadeMeses - 1);
+            Map<String, Long> dados = new HashMap<>();
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    String referencia = rs.getString("referencia");
+                    long total = rs.getLong("total");
+                    dados.put(referencia, total);
+                }
+            }
+            return dados;
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Erro ao agregar logs por mes", ex);
         }
     }
 }

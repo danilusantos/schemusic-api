@@ -29,6 +29,11 @@ public class AdministrationAccessLogController {
         return administrationAccessLogDelegate.listar(limite);
     }
 
+    @GetMapping("/series")
+    public ResponseEntity<?> serie(@RequestParam(required = false, defaultValue = "week") String periodo) {
+        return administrationAccessLogDelegate.serie(periodo);
+    }
+
     @PostMapping("/frontend-navigation")
     public ResponseEntity<?> registrarNavegacaoFrontend(
             @RequestBody Map<String, Object> body,

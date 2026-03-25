@@ -17,6 +17,10 @@ public class AdministrationAccessLogDelegate {
         return ResponseEntity.ok(adminAcessoLogBusiness.listar(limite));
     }
 
+    public ResponseEntity<?> serie(String periodo) {
+        return ResponseEntity.ok(adminAcessoLogBusiness.obterSeriePorPeriodo(periodo));
+    }
+
     public void registrarNavegacaoFrontend(
             String rota,
             String origem,
