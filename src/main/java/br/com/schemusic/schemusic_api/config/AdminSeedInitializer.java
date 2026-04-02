@@ -2,11 +2,15 @@ package br.com.schemusic.schemusic_api.config;
 
 import br.com.schemusic.schemusic_api.bean.RoleBean;
 import br.com.schemusic.schemusic_api.bean.UsuarioBean;
+import br.com.schemusic.schemusic_api.business.AdminAccessControlBusiness;
 import br.com.schemusic.schemusic_api.dao.AcessoSiteLogDAO;
 import br.com.schemusic.schemusic_api.dao.ListaAcessoDAO;
+import br.com.schemusic.schemusic_api.dao.PermissaoTelaDAO;
 import br.com.schemusic.schemusic_api.dao.RoleDAO;
+import br.com.schemusic.schemusic_api.dao.RolePermissaoDAO;
 import br.com.schemusic.schemusic_api.dao.SistemaConfigDAO;
 import br.com.schemusic.schemusic_api.dao.UsuarioDAO;
+import br.com.schemusic.schemusic_api.dao.UsuarioPermissaoDAO;
 import br.com.schemusic.schemusic_api.dao.UsuarioRoleDAO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +23,10 @@ public class AdminSeedInitializer implements CommandLineRunner {
     private final UsuarioDAO usuarioDAO;
     private final RoleDAO roleDAO;
     private final UsuarioRoleDAO usuarioRoleDAO;
+    private final PermissaoTelaDAO permissaoTelaDAO;
+    private final RolePermissaoDAO rolePermissaoDAO;
+    private final UsuarioPermissaoDAO usuarioPermissaoDAO;
+    private final AdminAccessControlBusiness adminAccessControlBusiness;
     private final SistemaConfigDAO sistemaConfigDAO;
     private final ListaAcessoDAO listaAcessoDAO;
     private final AcessoSiteLogDAO acessoSiteLogDAO;
@@ -39,6 +47,10 @@ public class AdminSeedInitializer implements CommandLineRunner {
     public AdminSeedInitializer(UsuarioDAO usuarioDAO,
                                 RoleDAO roleDAO,
                                 UsuarioRoleDAO usuarioRoleDAO,
+                                PermissaoTelaDAO permissaoTelaDAO,
+                                RolePermissaoDAO rolePermissaoDAO,
+                                UsuarioPermissaoDAO usuarioPermissaoDAO,
+                                AdminAccessControlBusiness adminAccessControlBusiness,
                                 SistemaConfigDAO sistemaConfigDAO,
                                 ListaAcessoDAO listaAcessoDAO,
                                 AcessoSiteLogDAO acessoSiteLogDAO,
@@ -46,6 +58,10 @@ public class AdminSeedInitializer implements CommandLineRunner {
         this.usuarioDAO = usuarioDAO;
         this.roleDAO = roleDAO;
         this.usuarioRoleDAO = usuarioRoleDAO;
+        this.permissaoTelaDAO = permissaoTelaDAO;
+        this.rolePermissaoDAO = rolePermissaoDAO;
+        this.usuarioPermissaoDAO = usuarioPermissaoDAO;
+        this.adminAccessControlBusiness = adminAccessControlBusiness;
         this.sistemaConfigDAO = sistemaConfigDAO;
         this.listaAcessoDAO = listaAcessoDAO;
         this.acessoSiteLogDAO = acessoSiteLogDAO;
@@ -57,9 +73,13 @@ public class AdminSeedInitializer implements CommandLineRunner {
         roleDAO.criarTabelaSeNaoExistir();
         usuarioDAO.criarTabelaSeNaoExistir();
         usuarioRoleDAO.criarTabelaSeNaoExistir();
+        permissaoTelaDAO.criarTabelaSeNaoExistir();
+        rolePermissaoDAO.criarTabelaSeNaoExistir();
+        usuarioPermissaoDAO.criarTabelaSeNaoExistir();
         sistemaConfigDAO.criarTabelaSeNaoExistir();
         listaAcessoDAO.criarTabelaSeNaoExistir();
         acessoSiteLogDAO.criarTabelaSeNaoExistir();
+        adminAccessControlBusiness.criarCatalogoPadraoSeNecessario();
 
         roleDAO.criarRoleSeNaoExistir("ADMIN", "Administracao do sistema");
         roleDAO.criarRoleSeNaoExistir("ARTISTA", "Usuario artista");
@@ -103,5 +123,30 @@ public class AdminSeedInitializer implements CommandLineRunner {
             throw new IllegalStateException("Role ADMIN nao encontrada para vincular no seed");
         }
         usuarioRoleDAO.vincularSeNaoExistir(idUsuario, roleAdmin.getIdRole());
+
+        java.util.List<Long> idsPermissaoAtivas = permissaoTelaDAO.listarAtivas().stream()
+                .map(p -> p.getIdPermissao())
+                .collect(java.util.stream.Collectors.toList());
+
+        java.util.List<Long> idsPermissaoRoleAdmin = rolePermissaoDAO.listarIdsPermissaoDaRole(roleAdmin.getIdRole());
+        if (!idsPermissaoRoleAdmin.containsAll(idsPermissaoAtivas)) {
+            java.util.LinkedHashSet<Long> merge = new java.util.LinkedHashSet<>(idsPermissaoRoleAdmin);
+            merge.addAll(idsPermissaoAtivas);
+            rolePermissaoDAO.substituirPermissoesDaRole(roleAdmin.getIdRole(), new java.util.ArrayList<>(merge));
+        }
+
+        java.util.Map<Long, Boolean> overridesAdmin = usuarioPermissaoDAO.listarOverridesDoUsuario(idUsuario);
+        boolean adminPadraoTemTodasPermissoes = idsPermissaoAtivas.stream().allMatch(id -> Boolean.TRUE.equals(overridesAdmin.get(id)));
+        if (!adminPadraoTemTodasPermissoes) {
+            java.util.List<java.util.Map<String, Object>> permissoesAdminPadrao = idsPermissaoAtivas.stream()
+                    .map(idPermissao -> {
+                        java.util.Map<String, Object> item = new java.util.HashMap<>();
+                        item.put("idPermissao", idPermissao);
+                        item.put("permitido", true);
+                        return item;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            usuarioPermissaoDAO.substituirPermissoesDoUsuario(idUsuario, permissoesAdminPadrao);
+        }
     }
 }
