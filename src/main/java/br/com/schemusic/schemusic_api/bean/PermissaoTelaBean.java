@@ -3,6 +3,9 @@ package br.com.schemusic.schemusic_api.bean;
 public class PermissaoTelaBean {
 
     private Long idPermissao;
+    private Long idGrupo;
+    private String grupoCodigo;
+    private String grupoNome;
     private String telaCodigo;
     private String acaoCodigo;
     private String descricao;
@@ -14,6 +17,30 @@ public class PermissaoTelaBean {
 
     public void setIdPermissao(Long idPermissao) {
         this.idPermissao = idPermissao;
+    }
+
+    public Long getIdGrupo() {
+        return idGrupo;
+    }
+
+    public void setIdGrupo(Long idGrupo) {
+        this.idGrupo = idGrupo;
+    }
+
+    public String getGrupoCodigo() {
+        return grupoCodigo;
+    }
+
+    public void setGrupoCodigo(String grupoCodigo) {
+        this.grupoCodigo = grupoCodigo;
+    }
+
+    public String getGrupoNome() {
+        return grupoNome;
+    }
+
+    public void setGrupoNome(String grupoNome) {
+        this.grupoNome = grupoNome;
     }
 
     public String getTelaCodigo() {

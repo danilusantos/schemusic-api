@@ -118,4 +118,22 @@ public class RolePermissaoDAO {
             throw new IllegalStateException("Erro ao listar permissoes por usuario via roles", ex);
         }
     }
+
+    public void excluirPermissoes(List<Long> idsPermissao) {
+        if (idsPermissao == null || idsPermissao.isEmpty()) {
+            return;
+        }
+
+        String sql = "DELETE FROM ROLE_PERMISSAO WHERE id_permissao IN (" + 
+                     String.join(",", idsPermissao.stream().map(id -> "?").toList()) + ")";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (int i = 0; i < idsPermissao.size(); i++) {
+                statement.setLong(i + 1, idsPermissao.get(i));
+            }
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Erro ao excluir vinculos de permissoes", ex);
+        }
+    }
 }

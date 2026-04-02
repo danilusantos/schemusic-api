@@ -7,6 +7,7 @@ import br.com.schemusic.schemusic_api.dao.AcessoSiteLogDAO;
 import br.com.schemusic.schemusic_api.dao.ListaAcessoDAO;
 import br.com.schemusic.schemusic_api.dao.PermissaoTelaDAO;
 import br.com.schemusic.schemusic_api.dao.RoleDAO;
+import br.com.schemusic.schemusic_api.dao.PermissaoGrupoDAO;
 import br.com.schemusic.schemusic_api.dao.RolePermissaoDAO;
 import br.com.schemusic.schemusic_api.dao.SistemaConfigDAO;
 import br.com.schemusic.schemusic_api.dao.UsuarioDAO;
@@ -25,6 +26,7 @@ public class AdminSeedInitializer implements CommandLineRunner {
     private final UsuarioRoleDAO usuarioRoleDAO;
     private final PermissaoTelaDAO permissaoTelaDAO;
     private final RolePermissaoDAO rolePermissaoDAO;
+    private final PermissaoGrupoDAO permissaoGrupoDAO;
     private final UsuarioPermissaoDAO usuarioPermissaoDAO;
     private final AdminAccessControlBusiness adminAccessControlBusiness;
     private final SistemaConfigDAO sistemaConfigDAO;
@@ -50,6 +52,7 @@ public class AdminSeedInitializer implements CommandLineRunner {
                                 PermissaoTelaDAO permissaoTelaDAO,
                                 RolePermissaoDAO rolePermissaoDAO,
                                 UsuarioPermissaoDAO usuarioPermissaoDAO,
+                                PermissaoGrupoDAO permissaoGrupoDAO,
                                 AdminAccessControlBusiness adminAccessControlBusiness,
                                 SistemaConfigDAO sistemaConfigDAO,
                                 ListaAcessoDAO listaAcessoDAO,
@@ -61,6 +64,7 @@ public class AdminSeedInitializer implements CommandLineRunner {
         this.permissaoTelaDAO = permissaoTelaDAO;
         this.rolePermissaoDAO = rolePermissaoDAO;
         this.usuarioPermissaoDAO = usuarioPermissaoDAO;
+        this.permissaoGrupoDAO = permissaoGrupoDAO;
         this.adminAccessControlBusiness = adminAccessControlBusiness;
         this.sistemaConfigDAO = sistemaConfigDAO;
         this.listaAcessoDAO = listaAcessoDAO;
@@ -74,6 +78,7 @@ public class AdminSeedInitializer implements CommandLineRunner {
         usuarioDAO.criarTabelaSeNaoExistir();
         usuarioRoleDAO.criarTabelaSeNaoExistir();
         permissaoTelaDAO.criarTabelaSeNaoExistir();
+        permissaoGrupoDAO.criarTabelaSeNaoExistir();
         rolePermissaoDAO.criarTabelaSeNaoExistir();
         usuarioPermissaoDAO.criarTabelaSeNaoExistir();
         sistemaConfigDAO.criarTabelaSeNaoExistir();
@@ -84,6 +89,8 @@ public class AdminSeedInitializer implements CommandLineRunner {
         roleDAO.criarRoleSeNaoExistir("ADMIN", "Administracao do sistema");
         roleDAO.criarRoleSeNaoExistir("ARTISTA", "Usuario artista");
         roleDAO.criarRoleSeNaoExistir("EMPRESA", "Usuario empresa");
+
+        garantirPermissoesRoleAdmin();
 
         sistemaConfigDAO.criarOuAtualizarPorChave(
                 "SYSTEM_DEFAULT_EMAIL",
@@ -118,22 +125,10 @@ public class AdminSeedInitializer implements CommandLineRunner {
     }
 
     private void garantirVinculoAdmin(Long idUsuario) {
-        RoleBean roleAdmin = roleDAO.buscarPorNome("ADMIN");
-        if (roleAdmin == null) {
-            throw new IllegalStateException("Role ADMIN nao encontrada para vincular no seed");
-        }
+        RoleBean roleAdmin = obterRoleAdminObrigatoria();
         usuarioRoleDAO.vincularSeNaoExistir(idUsuario, roleAdmin.getIdRole());
 
-        java.util.List<Long> idsPermissaoAtivas = permissaoTelaDAO.listarAtivas().stream()
-                .map(p -> p.getIdPermissao())
-                .collect(java.util.stream.Collectors.toList());
-
-        java.util.List<Long> idsPermissaoRoleAdmin = rolePermissaoDAO.listarIdsPermissaoDaRole(roleAdmin.getIdRole());
-        if (!idsPermissaoRoleAdmin.containsAll(idsPermissaoAtivas)) {
-            java.util.LinkedHashSet<Long> merge = new java.util.LinkedHashSet<>(idsPermissaoRoleAdmin);
-            merge.addAll(idsPermissaoAtivas);
-            rolePermissaoDAO.substituirPermissoesDaRole(roleAdmin.getIdRole(), new java.util.ArrayList<>(merge));
-        }
+        java.util.List<Long> idsPermissaoAtivas = listarIdsPermissaoAtivas();
 
         java.util.Map<Long, Boolean> overridesAdmin = usuarioPermissaoDAO.listarOverridesDoUsuario(idUsuario);
         boolean adminPadraoTemTodasPermissoes = idsPermissaoAtivas.stream().allMatch(id -> Boolean.TRUE.equals(overridesAdmin.get(id)));
@@ -148,5 +143,30 @@ public class AdminSeedInitializer implements CommandLineRunner {
                     .collect(java.util.stream.Collectors.toList());
             usuarioPermissaoDAO.substituirPermissoesDoUsuario(idUsuario, permissoesAdminPadrao);
         }
+    }
+
+    private void garantirPermissoesRoleAdmin() {
+        RoleBean roleAdmin = obterRoleAdminObrigatoria();
+        java.util.List<Long> idsPermissaoAtivas = listarIdsPermissaoAtivas();
+        java.util.List<Long> idsPermissaoRoleAdmin = rolePermissaoDAO.listarIdsPermissaoDaRole(roleAdmin.getIdRole());
+        if (!idsPermissaoRoleAdmin.containsAll(idsPermissaoAtivas)) {
+            java.util.LinkedHashSet<Long> merge = new java.util.LinkedHashSet<>(idsPermissaoRoleAdmin);
+            merge.addAll(idsPermissaoAtivas);
+            rolePermissaoDAO.substituirPermissoesDaRole(roleAdmin.getIdRole(), new java.util.ArrayList<>(merge));
+        }
+    }
+
+    private RoleBean obterRoleAdminObrigatoria() {
+        RoleBean roleAdmin = roleDAO.buscarPorNome("ADMIN");
+        if (roleAdmin == null) {
+            throw new IllegalStateException("Role ADMIN nao encontrada para vincular no seed");
+        }
+        return roleAdmin;
+    }
+
+    private java.util.List<Long> listarIdsPermissaoAtivas() {
+        return permissaoTelaDAO.listarAtivas().stream()
+                .map(p -> p.getIdPermissao())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

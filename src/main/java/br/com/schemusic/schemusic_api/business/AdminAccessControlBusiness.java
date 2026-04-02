@@ -1,8 +1,10 @@
 package br.com.schemusic.schemusic_api.business;
 
 import br.com.schemusic.schemusic_api.bean.PermissaoTelaBean;
+import br.com.schemusic.schemusic_api.bean.PermissaoGrupoBean;
 import br.com.schemusic.schemusic_api.bean.RoleBean;
 import br.com.schemusic.schemusic_api.bean.UsuarioBean;
+import br.com.schemusic.schemusic_api.dao.PermissaoGrupoDAO;
 import br.com.schemusic.schemusic_api.dao.PermissaoTelaDAO;
 import br.com.schemusic.schemusic_api.dao.RoleDAO;
 import br.com.schemusic.schemusic_api.dao.RolePermissaoDAO;
@@ -11,6 +13,11 @@ import br.com.schemusic.schemusic_api.dao.UsuarioPermissaoDAO;
 import br.com.schemusic.schemusic_api.dao.UsuarioRoleDAO;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,45 +31,62 @@ import java.util.Set;
 public class AdminAccessControlBusiness {
 
     private static final List<String> ACOES_PADRAO = List.of("CONSULTAR", "INCLUIR", "EDITAR", "EXCLUIR");
+    private static final String GRUPO_PADRAO_CODIGO = "ADMIN";
+    private static final String GRUPO_PADRAO_NOME = "Administracao";
 
     private static final Map<String, String> TELAS_ADMIN = Map.ofEntries(
             Map.entry("ADMIN_DASHBOARD", "Dashboard administrativo"),
             Map.entry("ADMIN_USERS", "Usuarios administrativos"),
             Map.entry("ADMIN_ROLES", "Perfis de acesso"),
             Map.entry("ADMIN_ACCESS_CONTROL", "Controle de permissoes"),
+            Map.entry("ADMIN_ACCESS_CATALOG", "Catalogo de permissoes"),
+            Map.entry("ADMIN_CONTROL_PANEL", "Painel de controle"),
             Map.entry("ADMIN_CONFIGS", "Configuracoes do sistema"),
             Map.entry("ADMIN_ACCESS_LISTS", "Listas de acesso"),
             Map.entry("ADMIN_ACCESS_LOGS", "Logs de acesso")
     );
 
+    private final PermissaoGrupoDAO permissaoGrupoDAO;
     private final PermissaoTelaDAO permissaoTelaDAO;
     private final RolePermissaoDAO rolePermissaoDAO;
     private final UsuarioPermissaoDAO usuarioPermissaoDAO;
     private final UsuarioDAO usuarioDAO;
     private final RoleDAO roleDAO;
     private final UsuarioRoleDAO usuarioRoleDAO;
+    private final DataSource dataSource;
 
-    public AdminAccessControlBusiness(PermissaoTelaDAO permissaoTelaDAO,
+    public AdminAccessControlBusiness(PermissaoGrupoDAO permissaoGrupoDAO,
+                                      PermissaoTelaDAO permissaoTelaDAO,
                                       RolePermissaoDAO rolePermissaoDAO,
                                       UsuarioPermissaoDAO usuarioPermissaoDAO,
                                       UsuarioDAO usuarioDAO,
                                       RoleDAO roleDAO,
-                                      UsuarioRoleDAO usuarioRoleDAO) {
+                                      UsuarioRoleDAO usuarioRoleDAO,
+                                      DataSource dataSource) {
+        this.permissaoGrupoDAO = permissaoGrupoDAO;
         this.permissaoTelaDAO = permissaoTelaDAO;
         this.rolePermissaoDAO = rolePermissaoDAO;
         this.usuarioPermissaoDAO = usuarioPermissaoDAO;
         this.usuarioDAO = usuarioDAO;
         this.roleDAO = roleDAO;
         this.usuarioRoleDAO = usuarioRoleDAO;
+        this.dataSource = dataSource;
     }
 
     public void criarCatalogoPadraoSeNecessario() {
+        PermissaoGrupoBean grupoPadrao = garantirGrupoPadrao();
+
         for (Map.Entry<String, String> tela : TELAS_ADMIN.entrySet()) {
             for (String acao : ACOES_PADRAO) {
-                if (permissaoTelaDAO.buscarPorTelaEAcao(tela.getKey(), acao) != null) {
+                PermissaoTelaBean existente = permissaoTelaDAO.buscarPorTelaEAcao(tela.getKey(), acao);
+                if (existente != null) {
+                    if (!grupoPadrao.getIdGrupo().equals(existente.getIdGrupo())) {
+                        permissaoTelaDAO.atualizarGrupoDaPermissao(existente.getIdPermissao(), grupoPadrao.getIdGrupo());
+                    }
                     continue;
                 }
                 PermissaoTelaBean permissao = new PermissaoTelaBean();
+                permissao.setIdGrupo(grupoPadrao.getIdGrupo());
                 permissao.setTelaCodigo(tela.getKey());
                 permissao.setAcaoCodigo(acao);
                 permissao.setDescricao(tela.getValue() + " - " + acao);
@@ -75,30 +99,128 @@ public class AdminAccessControlBusiness {
     public Map<String, Object> listarCatalogo() {
         List<PermissaoTelaBean> permissoes = permissaoTelaDAO.listarAtivas();
         Map<String, Object> telas = new LinkedHashMap<>();
+        Map<String, Object> grupos = new LinkedHashMap<>();
 
         for (PermissaoTelaBean permissao : permissoes) {
+            String grupoCodigo = permissao.getGrupoCodigo();
+            String grupoNome = permissao.getGrupoNome();
+            if (grupoCodigo == null || grupoCodigo.isBlank()) {
+                grupoCodigo = normalizarGrupoCodigo(GRUPO_PADRAO_CODIGO);
+                grupoNome = GRUPO_PADRAO_NOME;
+            }
+
+            final String grupoCodigoEfetivo = grupoCodigo;
+            final String grupoNomeEfetivo = grupoNome;
+            final String grupoDescricaoEfetiva = permissao.getGrupoNome() == null ? "" : permissao.getGrupoNome();
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> grupo = (Map<String, Object>) grupos.computeIfAbsent(grupoCodigo, key -> {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("grupoCodigo", key);
+                item.put("grupoNome", grupoNomeEfetivo);
+                item.put("descricao", grupoDescricaoEfetiva);
+                item.put("telas", new ArrayList<Map<String, Object>>());
+                return item;
+            });
+
             String telaCodigo = permissao.getTelaCodigo();
             @SuppressWarnings("unchecked")
             Map<String, Object> tela = (Map<String, Object>) telas.computeIfAbsent(telaCodigo, key -> {
                 Map<String, Object> item = new LinkedHashMap<>();
                 item.put("telaCodigo", key);
                 item.put("telaNome", TELAS_ADMIN.getOrDefault(key, key));
+                item.put("grupoCodigo", grupoCodigoEfetivo);
+                item.put("grupoNome", grupoNomeEfetivo);
                 item.put("permissoes", new ArrayList<Map<String, Object>>());
                 return item;
             });
 
             @SuppressWarnings("unchecked")
+            List<Map<String, Object>> telasDoGrupo = (List<Map<String, Object>>) grupo.get("telas");
+            if (!telasDoGrupo.contains(tela)) {
+                telasDoGrupo.add(tela);
+            }
+
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> listaPermissoes = (List<Map<String, Object>>) tela.get("permissoes");
             Map<String, Object> permissaoJson = new LinkedHashMap<>();
             permissaoJson.put("idPermissao", permissao.getIdPermissao());
+            permissaoJson.put("idGrupo", permissao.getIdGrupo());
             permissaoJson.put("acaoCodigo", permissao.getAcaoCodigo());
             permissaoJson.put("descricao", permissao.getDescricao());
             listaPermissoes.add(permissaoJson);
         }
 
         return Map.of(
+                "grupos", new ArrayList<>(grupos.values()),
                 "telas", new ArrayList<>(telas.values())
         );
+    }
+
+    public Map<String, Object> listarGruposCatalogo() {
+        List<PermissaoGrupoBean> grupos = permissaoGrupoDAO.listarTodos();
+        List<Map<String, Object>> itens = new ArrayList<>();
+
+        for (PermissaoGrupoBean grupo : grupos) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("idGrupo", grupo.getIdGrupo());
+            item.put("codigoGrupo", grupo.getCodigoGrupo());
+            item.put("nomeGrupo", grupo.getNomeGrupo());
+            item.put("descricao", grupo.getDescricao());
+            item.put("ativo", grupo.getAtivo());
+            itens.add(item);
+        }
+
+        return Map.of("grupos", itens);
+    }
+
+    public Map<String, Object> criarGrupoCatalogo(String codigoGrupo, String nomeGrupo, String descricao) {
+        String codigoNormalizado = normalizarGrupoCodigo(codigoGrupo);
+        if (nomeGrupo == null || nomeGrupo.isBlank()) {
+            throw new IllegalArgumentException("nomeGrupo obrigatorio");
+        }
+
+        if (permissaoGrupoDAO.buscarPorCodigo(codigoNormalizado) != null) {
+            throw new IllegalArgumentException("Grupo ja existe");
+        }
+
+        PermissaoGrupoBean grupo = new PermissaoGrupoBean();
+        grupo.setCodigoGrupo(codigoNormalizado);
+        grupo.setNomeGrupo(nomeGrupo.trim());
+        grupo.setDescricao(descricao == null ? null : descricao.trim());
+        grupo.setAtivo(true);
+        Long idGrupo = permissaoGrupoDAO.inserir(grupo);
+        return obterGrupoCatalogoPorId(idGrupo);
+    }
+
+    public Map<String, Object> criarTelaCatalogo(String codigoGrupo, String telaCodigo, String telaNome, String descricao) {
+        String grupoCodigo = normalizarGrupoCodigo(codigoGrupo);
+        String telaCodigoNormalizado = normalizarTelaCodigo(telaCodigo);
+        if (telaNome == null || telaNome.isBlank()) {
+            throw new IllegalArgumentException("telaNome obrigatorio");
+        }
+
+        PermissaoGrupoBean grupo = permissaoGrupoDAO.buscarPorCodigo(grupoCodigo);
+        if (grupo == null) {
+            throw new IllegalArgumentException("Grupo nao encontrado");
+        }
+
+        if (permissaoTelaDAO.buscarPorTelaEAcao(telaCodigoNormalizado, ACOES_PADRAO.get(0)) != null) {
+            throw new IllegalArgumentException("Tela ja existe no catalogo");
+        }
+
+        for (String acao : ACOES_PADRAO) {
+            PermissaoTelaBean permissao = new PermissaoTelaBean();
+            permissao.setIdGrupo(grupo.getIdGrupo());
+            permissao.setTelaCodigo(telaCodigoNormalizado);
+            permissao.setAcaoCodigo(acao);
+            String descricaoBase = descricao == null || descricao.isBlank() ? telaNome.trim() : descricao.trim();
+            permissao.setDescricao(descricaoBase + " - " + acao);
+            permissao.setAtivo(true);
+            permissaoTelaDAO.inserir(permissao);
+        }
+
+        return listarCatalogo();
     }
 
     public Map<String, Object> obterPermissoesDaRole(Long idRole) {
@@ -236,6 +358,9 @@ public class AdminAccessControlBusiness {
         if (valor.contains("/admin/access-control")) {
             return "ADMIN_ACCESS_CONTROL";
         }
+        if (valor.contains("/admin/access-catalog")) {
+            return "ADMIN_ACCESS_CATALOG";
+        }
         if (valor.contains("/admin/configs")) {
             return "ADMIN_CONFIGS";
         }
@@ -331,5 +456,108 @@ public class AdminAccessControlBusiness {
             throw new IllegalArgumentException("telaCodigo obrigatorio");
         }
         return telaCodigo.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizarGrupoCodigo(String grupoCodigo) {
+        if (grupoCodigo == null || grupoCodigo.isBlank()) {
+            throw new IllegalArgumentException("grupoCodigo obrigatorio");
+        }
+        return grupoCodigo.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private PermissaoGrupoBean garantirGrupoPadrao() {
+        PermissaoGrupoBean grupo = permissaoGrupoDAO.buscarPorCodigo(GRUPO_PADRAO_CODIGO);
+        if (grupo != null) {
+            return grupo;
+        }
+
+        PermissaoGrupoBean novoGrupo = new PermissaoGrupoBean();
+        novoGrupo.setCodigoGrupo(GRUPO_PADRAO_CODIGO);
+        novoGrupo.setNomeGrupo(GRUPO_PADRAO_NOME);
+        novoGrupo.setDescricao("Grupo padrao do painel administrativo");
+        novoGrupo.setAtivo(true);
+        Long idGrupo = permissaoGrupoDAO.inserir(novoGrupo);
+        return permissaoGrupoDAO.buscarPorId(idGrupo);
+    }
+
+    private Map<String, Object> obterGrupoCatalogoPorId(Long idGrupo) {
+        PermissaoGrupoBean grupo = permissaoGrupoDAO.buscarPorId(idGrupo);
+        if (grupo == null) {
+            throw new IllegalArgumentException("Grupo nao encontrado");
+        }
+
+        Map<String, Object> resposta = new LinkedHashMap<>();
+        resposta.put("idGrupo", grupo.getIdGrupo());
+        resposta.put("codigoGrupo", grupo.getCodigoGrupo());
+        resposta.put("nomeGrupo", grupo.getNomeGrupo());
+        resposta.put("descricao", grupo.getDescricao());
+        resposta.put("ativo", grupo.getAtivo());
+        return resposta;
+    }
+
+    public Map<String, Object> excluirGruposCatalogo(List<Long> idsGrupo) {
+        if (idsGrupo == null || idsGrupo.isEmpty()) {
+            throw new IllegalArgumentException("Informe ao menos um grupo para excluir");
+        }
+
+        // Validar existencia de grupos
+        for (Long idGrupo : idsGrupo) {
+            if (permissaoGrupoDAO.buscarPorId(idGrupo) == null) {
+                throw new IllegalArgumentException("Grupo nao encontrado: " + idGrupo);
+            }
+        }
+
+        // Para cada grupo, remover telas vinculadas primeiro
+        for (Long idGrupo : idsGrupo) {
+            // Buscar as permissões que pertencem aos grupos
+            String sqlBuscarTelasPorGrupo = "SELECT id_permissao FROM PERMISSAO_TELA WHERE id_grupo = ?";
+            List<Long> idsPermissao = new ArrayList<>();
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement stmt = connection.prepareStatement(sqlBuscarTelasPorGrupo)) {
+                stmt.setLong(1, idGrupo);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        idsPermissao.add(rs.getLong("id_permissao"));
+                    }
+                }
+            } catch (SQLException ex) {
+                throw new IllegalStateException("Erro ao buscar telas do grupo", ex);
+            }
+            
+            // Remover os vículos em ROLE_PERMISSAO e USUARIO_PERMISSAO
+            if (!idsPermissao.isEmpty()) {
+                rolePermissaoDAO.excluirPermissoes(idsPermissao);
+                usuarioPermissaoDAO.excluirPermissoes(idsPermissao);
+                // Deletar as permissoes de tela
+                permissaoTelaDAO.excluirMultiplos(idsPermissao);
+            }
+        }
+
+        // Deletar os grupos
+        permissaoGrupoDAO.excluirMultiplos(idsGrupo);
+
+        return listarCatalogo();
+    }
+
+    public Map<String, Object> excluirTelasCatalogo(List<Long> idsPermissao) {
+        if (idsPermissao == null || idsPermissao.isEmpty()) {
+            throw new IllegalArgumentException("Informe ao menos uma tela para excluir");
+        }
+
+        // Validar existencia de permissoes
+        for (Long idPermissao : idsPermissao) {
+            if (permissaoTelaDAO.buscarPorId(idPermissao) == null) {
+                throw new IllegalArgumentException("Tela nao encontrada: " + idPermissao);
+            }
+        }
+
+        // Remover os vinculos em ROLE_PERMISSAO e USUARIO_PERMISSAO
+        rolePermissaoDAO.excluirPermissoes(idsPermissao);
+        usuarioPermissaoDAO.excluirPermissoes(idsPermissao);
+
+        // Deletar as permissoes de tela
+        permissaoTelaDAO.excluirMultiplos(idsPermissao);
+
+        return listarCatalogo();
     }
 }
