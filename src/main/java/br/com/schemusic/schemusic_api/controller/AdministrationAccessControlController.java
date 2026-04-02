@@ -25,26 +25,6 @@ public class AdministrationAccessControlController {
         this.administrationAccessControlDelegate = administrationAccessControlDelegate;
     }
 
-    @GetMapping("/catalog")
-    public ResponseEntity<?> catalogo() {
-        return administrationAccessControlDelegate.listarCatalogo();
-    }
-
-    @GetMapping("/groups")
-    public ResponseEntity<?> listarGrupos() {
-        return administrationAccessControlDelegate.listarGruposCatalogo();
-    }
-
-    @PutMapping("/groups")
-    public ResponseEntity<?> criarGrupo(@RequestBody Map<String, Object> body) {
-        return administrationAccessControlDelegate.criarGrupoCatalogo(body);
-    }
-
-    @PutMapping("/groups/screens")
-    public ResponseEntity<?> criarTela(@RequestBody Map<String, Object> body) {
-        return administrationAccessControlDelegate.criarTelaCatalogo(body);
-    }
-
     @GetMapping("/roles/{idRole}")
     public ResponseEntity<?> obterPermissoesDaRole(@PathVariable Long idRole) {
         return administrationAccessControlDelegate.obterPermissoesDaRole(idRole);
@@ -73,16 +53,6 @@ public class AdministrationAccessControlController {
     @PutMapping("/users/{idUsuario}")
     public ResponseEntity<?> atualizarPermissoesDoUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, Object> body) {
         return administrationAccessControlDelegate.atualizarPermissoesDoUsuario(idUsuario, body);
-    }
-
-    @PostMapping("/catalog/groups/delete")
-    public ResponseEntity<?> excluirGruposCatalogo(@RequestBody Map<String, Object> body) {
-        return administrationAccessControlDelegate.excluirGruposCatalogo(body);
-    }
-
-    @PostMapping("/catalog/screens/delete")
-    public ResponseEntity<?> excluirTelasCatalogo(@RequestBody Map<String, Object> body) {
-        return administrationAccessControlDelegate.excluirTelasCatalogo(body);
     }
 
     @GetMapping("/me")
