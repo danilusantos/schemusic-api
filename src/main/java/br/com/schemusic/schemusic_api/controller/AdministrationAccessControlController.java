@@ -45,16 +45,6 @@ public class AdministrationAccessControlController {
         return administrationAccessControlDelegate.criarTelaCatalogo(body);
     }
 
-    @DeleteMapping("/groups/{codigoGrupo}")
-    public ResponseEntity<?> deletarGrupo(@PathVariable String codigoGrupo) {
-        return administrationAccessControlDelegate.deletarGrupoCatalogo(codigoGrupo);
-    }
-
-    @DeleteMapping("/screens/{codigoTela}")
-    public ResponseEntity<?> deletarTela(@PathVariable String codigoTela) {
-        return administrationAccessControlDelegate.deletarTelaCatalogo(codigoTela);
-    }
-
     @GetMapping("/roles/{idRole}")
     public ResponseEntity<?> obterPermissoesDaRole(@PathVariable Long idRole) {
         return administrationAccessControlDelegate.obterPermissoesDaRole(idRole);

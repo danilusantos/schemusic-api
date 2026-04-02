@@ -34,6 +34,19 @@ public class AdminAccessControlBusiness {
     private static final String GRUPO_PADRAO_CODIGO = "ADMIN";
     private static final String GRUPO_PADRAO_NOME = "Administracao";
 
+    // JSON Key constants
+    private static final String KEY_GRUPO_CODIGO = "grupoCodigo";
+    private static final String KEY_GRUPO_NOME = "grupoNome";
+    private static final String KEY_TELA_CODIGO = "telaCodigo";
+    private static final String KEY_TELA_NOME = "telaNome";
+    private static final String KEY_DESCRICAO = "descricao";
+    private static final String KEY_TELAS = "telas";
+    private static final String KEY_PERMISSOES = "permissoes";
+    private static final String KEY_ID_PERMISSAO = "idPermissao";
+    private static final String KEY_ID_GRUPO = "idGrupo";
+    private static final String KEY_ACAO_CODIGO = "acaoCodigo";
+    private static final String KEY_ATIVO = "ativo";
+
     private static final Map<String, String> TELAS_ADMIN = Map.ofEntries(
             Map.entry("ADMIN_DASHBOARD", "Dashboard administrativo"),
             Map.entry("ADMIN_USERS", "Usuarios administrativos"),
@@ -116,10 +129,10 @@ public class AdminAccessControlBusiness {
             @SuppressWarnings("unchecked")
             Map<String, Object> grupo = (Map<String, Object>) grupos.computeIfAbsent(grupoCodigo, key -> {
                 Map<String, Object> item = new LinkedHashMap<>();
-                item.put("grupoCodigo", key);
-                item.put("grupoNome", grupoNomeEfetivo);
-                item.put("descricao", grupoDescricaoEfetiva);
-                item.put("telas", new ArrayList<Map<String, Object>>());
+                item.put(KEY_GRUPO_CODIGO, key);
+                item.put(KEY_GRUPO_NOME, grupoNomeEfetivo);
+                item.put(KEY_DESCRICAO, grupoDescricaoEfetiva);
+                item.put(KEY_TELAS, new ArrayList<Map<String, Object>>());
                 return item;
             });
 
@@ -127,28 +140,42 @@ public class AdminAccessControlBusiness {
             @SuppressWarnings("unchecked")
             Map<String, Object> tela = (Map<String, Object>) telas.computeIfAbsent(telaCodigo, key -> {
                 Map<String, Object> item = new LinkedHashMap<>();
-                item.put("telaCodigo", key);
-                item.put("telaNome", TELAS_ADMIN.getOrDefault(key, key));
-                item.put("grupoCodigo", grupoCodigoEfetivo);
-                item.put("grupoNome", grupoNomeEfetivo);
-                item.put("permissoes", new ArrayList<Map<String, Object>>());
+                item.put(KEY_TELA_CODIGO, key);
+                item.put(KEY_TELA_NOME, TELAS_ADMIN.getOrDefault(key, key));
+                item.put(KEY_GRUPO_CODIGO, grupoCodigoEfetivo);
+                item.put(KEY_GRUPO_NOME, grupoNomeEfetivo);
+                item.put(KEY_PERMISSOES, new ArrayList<Map<String, Object>>());
                 return item;
             });
 
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> telasDoGrupo = (List<Map<String, Object>>) grupo.get("telas");
+            List<Map<String, Object>> telasDoGrupo = (List<Map<String, Object>>) grupo.get(KEY_TELAS);
             if (!telasDoGrupo.contains(tela)) {
                 telasDoGrupo.add(tela);
             }
 
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> listaPermissoes = (List<Map<String, Object>>) tela.get("permissoes");
+            List<Map<String, Object>> listaPermissoes = (List<Map<String, Object>>) tela.get(KEY_PERMISSOES);
             Map<String, Object> permissaoJson = new LinkedHashMap<>();
-            permissaoJson.put("idPermissao", permissao.getIdPermissao());
-            permissaoJson.put("idGrupo", permissao.getIdGrupo());
-            permissaoJson.put("acaoCodigo", permissao.getAcaoCodigo());
-            permissaoJson.put("descricao", permissao.getDescricao());
+            permissaoJson.put(KEY_ID_PERMISSAO, permissao.getIdPermissao());
+            permissaoJson.put(KEY_ID_GRUPO, permissao.getIdGrupo());
+            permissaoJson.put(KEY_ACAO_CODIGO, permissao.getAcaoCodigo());
+            permissaoJson.put(KEY_DESCRICAO, permissao.getDescricao());
             listaPermissoes.add(permissaoJson);
+        }
+
+        // Adicionar grupos que foram criados mas não têm telas/permissões
+        List<PermissaoGrupoBean> todosOsGrupos = permissaoGrupoDAO.listarTodos();
+        for (PermissaoGrupoBean grupoBean : todosOsGrupos) {
+            String codigoGrupo = grupoBean.getCodigoGrupo();
+            if (!grupos.containsKey(codigoGrupo)) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put(KEY_GRUPO_CODIGO, codigoGrupo);
+                item.put(KEY_GRUPO_NOME, grupoBean.getNomeGrupo());
+                item.put(KEY_DESCRICAO, grupoBean.getDescricao());
+                item.put(KEY_TELAS, new ArrayList<Map<String, Object>>());
+                grupos.put(codigoGrupo, item);
+            }
         }
 
         return Map.of(
@@ -163,11 +190,11 @@ public class AdminAccessControlBusiness {
 
         for (PermissaoGrupoBean grupo : grupos) {
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("idGrupo", grupo.getIdGrupo());
-            item.put("codigoGrupo", grupo.getCodigoGrupo());
-            item.put("nomeGrupo", grupo.getNomeGrupo());
-            item.put("descricao", grupo.getDescricao());
-            item.put("ativo", grupo.getAtivo());
+            item.put(KEY_ID_GRUPO, grupo.getIdGrupo());
+            item.put(KEY_GRUPO_CODIGO, grupo.getCodigoGrupo());
+            item.put(KEY_GRUPO_NOME, grupo.getNomeGrupo());
+            item.put(KEY_DESCRICAO, grupo.getDescricao());
+            item.put(KEY_ATIVO, grupo.getAtivo());
             itens.add(item);
         }
 
@@ -487,11 +514,11 @@ public class AdminAccessControlBusiness {
         }
 
         Map<String, Object> resposta = new LinkedHashMap<>();
-        resposta.put("idGrupo", grupo.getIdGrupo());
-        resposta.put("codigoGrupo", grupo.getCodigoGrupo());
-        resposta.put("nomeGrupo", grupo.getNomeGrupo());
-        resposta.put("descricao", grupo.getDescricao());
-        resposta.put("ativo", grupo.getAtivo());
+        resposta.put(KEY_ID_GRUPO, grupo.getIdGrupo());
+        resposta.put(KEY_GRUPO_CODIGO, grupo.getCodigoGrupo());
+        resposta.put(KEY_GRUPO_NOME, grupo.getNomeGrupo());
+        resposta.put(KEY_DESCRICAO, grupo.getDescricao());
+        resposta.put(KEY_ATIVO, grupo.getAtivo());
         return resposta;
     }
 

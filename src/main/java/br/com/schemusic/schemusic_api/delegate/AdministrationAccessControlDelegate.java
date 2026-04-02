@@ -48,24 +48,6 @@ public class AdministrationAccessControlDelegate {
         }
     }
 
-    public ResponseEntity<?> deletarGrupoCatalogo(String codigoGrupo) {
-        try {
-            adminAccessControlBusiness.deletarGrupoCatalogo(codigoGrupo);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(Map.of("erro", ex.getMessage()));
-        }
-    }
-
-    public ResponseEntity<?> deletarTelaCatalogo(String codigoTela) {
-        try {
-            adminAccessControlBusiness.deletarTelaCatalogo(codigoTela);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(Map.of("erro", ex.getMessage()));
-        }
-    }
-
     public ResponseEntity<?> obterPermissoesDaRole(Long idRole) {
         try {
             return ResponseEntity.ok(adminAccessControlBusiness.obterPermissoesDaRole(idRole));
