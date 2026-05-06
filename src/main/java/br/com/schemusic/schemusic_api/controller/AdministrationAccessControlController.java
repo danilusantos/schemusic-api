@@ -55,6 +55,16 @@ public class AdministrationAccessControlController {
         return administrationAccessControlDelegate.atualizarPermissoesDoUsuario(idUsuario, body);
     }
 
+    @GetMapping("/catalog")
+    public ResponseEntity<?> listarCatalogoAcessos() {
+        return administrationAccessControlDelegate.listarCatalogoAcessos();
+    }
+
+    @PostMapping("/catalog/screens/delete")
+    public ResponseEntity<?> excluirTelasCatalogo(@RequestBody Map<String, Object> body) {
+        return administrationAccessControlDelegate.excluirTelasCatalogo(body);
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> meuAcesso(
             Authentication authentication,

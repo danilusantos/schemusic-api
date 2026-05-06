@@ -51,6 +51,14 @@ public class AdministrationAccessControlDelegate {
         }
     }
 
+    public ResponseEntity<?> listarCatalogoAcessos() {
+        try {
+            return ResponseEntity.ok(adminAccessControlBusiness.listarCatalogoAcessos());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("erro", ex.getMessage()));
+        }
+    }
+
     public ResponseEntity<?> atualizarPermissoesDoUsuario(Long idUsuario, Map<String, Object> body) {
         try {
             @SuppressWarnings("unchecked")
@@ -87,6 +95,23 @@ public class AdministrationAccessControlDelegate {
                 telaResolvida = adminAccessControlBusiness.resolverTelaPorRota(rota);
             }
             return ResponseEntity.ok(adminAccessControlBusiness.obterAcessoEfetivoDoUsuario(idUsuario, telaResolvida));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("erro", ex.getMessage()));
+        }
+    }
+
+    public ResponseEntity<?> excluirTelasCatalogo(Map<String, Object> body) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Object> payload = (List<Object>) body.get("ids");
+            if (payload == null) {
+                throw new IllegalArgumentException("Campo ids obrigatorio");
+            }
+            List<Long> idsPermissao = payload.stream()
+                    .map(item -> item instanceof Number number ? number.longValue() : Long.parseLong(String.valueOf(item)))
+                    .toList();
+
+            return ResponseEntity.ok(adminAccessControlBusiness.excluirTelasCatalogo(idsPermissao));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(Map.of("erro", ex.getMessage()));
         }

@@ -40,6 +40,7 @@ public class AdminAccessControlBusiness {
     private static final String KEY_TELA_CODIGO = "telaCodigo";
     private static final String KEY_TELA_NOME = "telaNome";
     private static final String KEY_DESCRICAO = "descricao";
+    private static final String KEY_GRUPOS = "grupos";
     private static final String KEY_TELAS = "telas";
     private static final String KEY_PERMISSOES = "permissoes";
     private static final String KEY_ID_PERMISSAO = "idPermissao";
@@ -47,15 +48,16 @@ public class AdminAccessControlBusiness {
     private static final String KEY_ACAO_CODIGO = "acaoCodigo";
     private static final String KEY_ATIVO = "ativo";
 
-    private static final Map<String, String> TELAS_ADMIN = Map.ofEntries(
+        private static final Map<String, String> TELAS_ADMIN = Map.ofEntries(
             Map.entry("ADMIN_DASHBOARD", "Dashboard administrativo"),
-            Map.entry("ADMIN_USERS", "Usuarios administrativos"),
+            Map.entry("ADMIN_USERS", "Usuários administrativos"),
             Map.entry("ADMIN_ROLES", "Perfis de acesso"),
-            Map.entry("ADMIN_ACCESS_CONTROL", "Controle de permissoes"),
-            Map.entry("ADMIN_CONFIGS", "Configuracoes do sistema"),
+            Map.entry("ADMIN_ACCESS_CONTROL", "Controle de permissões"),
+            Map.entry("ADMIN_CONFIGS", "Configurações do sistema"),
             Map.entry("ADMIN_ACCESS_LISTS", "Listas de acesso"),
-            Map.entry("ADMIN_ACCESS_LOGS", "Logs de acesso")
-    );
+            Map.entry("ADMIN_ACCESS_LOGS", "Logs de acesso"),
+            Map.entry("ADMIN_ACCESS_CATALOG", "Catálogo de permissões")
+        );
 
     private final PermissaoGrupoDAO permissaoGrupoDAO;
     private final PermissaoTelaDAO permissaoTelaDAO;
@@ -141,6 +143,83 @@ public class AdminAccessControlBusiness {
         return montarRespostaVinculos("usuario", idUsuario, idsBasePorRole, overrides);
     }
 
+    public Map<String, Object> listarCatalogoAcessos() {
+        List<PermissaoGrupoBean> gruposAtivos = permissaoGrupoDAO.listarAtivos();
+        List<PermissaoTelaBean> permissoesAtivas = permissaoTelaDAO.listarAtivas();
+
+        Map<String, Map<String, Object>> gruposPorCodigo = new LinkedHashMap<>();
+
+        for (PermissaoGrupoBean grupo : gruposAtivos) {
+            Map<String, Object> grupoJson = new LinkedHashMap<>();
+            grupoJson.put(KEY_GRUPO_CODIGO, grupo.getCodigoGrupo());
+            grupoJson.put(KEY_GRUPO_NOME, grupo.getNomeGrupo());
+            grupoJson.put(KEY_DESCRICAO, grupo.getDescricao());
+            grupoJson.put(KEY_TELAS, new ArrayList<Map<String, Object>>());
+            gruposPorCodigo.put(grupo.getCodigoGrupo(), grupoJson);
+        }
+
+        Map<String, Map<String, Object>> telasPorChave = new LinkedHashMap<>();
+
+        for (PermissaoTelaBean permissao : permissoesAtivas) {
+            String grupoCodigo = permissao.getGrupoCodigo();
+            if (grupoCodigo == null || grupoCodigo.isBlank()) {
+                grupoCodigo = GRUPO_PADRAO_CODIGO;
+            }
+
+            // Implementar getOrDefault manualmente: se não existe o grupo, criar
+            if (!gruposPorCodigo.containsKey(grupoCodigo)) {
+                Map<String, Object> grupoFallback = new LinkedHashMap<>();
+                grupoFallback.put(KEY_GRUPO_CODIGO, grupoCodigo);
+                grupoFallback.put(KEY_GRUPO_NOME, permissao.getGrupoNome() != null ? permissao.getGrupoNome() : grupoCodigo);
+                grupoFallback.put(KEY_DESCRICAO, null);
+                grupoFallback.put(KEY_TELAS, new ArrayList<Map<String, Object>>());
+                gruposPorCodigo.put(grupoCodigo, grupoFallback);
+            }
+
+            // Obter grupo (agora garantido que existe)
+            Map<String, Object> grupoJson = gruposPorCodigo.get(grupoCodigo);
+
+            String telaKey = grupoCodigo + "|" + permissao.getTelaCodigo();
+            if (!telasPorChave.containsKey(telaKey)) {
+                Map<String, Object> tela = new LinkedHashMap<>();
+                tela.put(KEY_GRUPO_CODIGO, grupoCodigo);
+                tela.put(KEY_GRUPO_NOME, permissao.getGrupoNome() != null ? permissao.getGrupoNome() : grupoCodigo);
+                tela.put(KEY_TELA_CODIGO, permissao.getTelaCodigo());
+                tela.put(KEY_TELA_NOME, TELAS_ADMIN.getOrDefault(permissao.getTelaCodigo(), permissao.getTelaCodigo()));
+                tela.put(KEY_PERMISSOES, new ArrayList<Map<String, Object>>());
+                
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> telasDoGrupo = (List<Map<String, Object>>) grupoJson.get(KEY_TELAS);
+                telasDoGrupo.add(tela);
+                
+                telasPorChave.put(telaKey, tela);
+            }
+
+            Map<String, Object> telaJson = telasPorChave.get(telaKey);
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> permissoesDaTela = (List<Map<String, Object>>) telaJson.get(KEY_PERMISSOES);
+
+            Map<String, Object> permissaoJson = new LinkedHashMap<>();
+            permissaoJson.put(KEY_ID_PERMISSAO, permissao.getIdPermissao());
+            permissaoJson.put(KEY_ACAO_CODIGO, permissao.getAcaoCodigo());
+            permissaoJson.put(KEY_DESCRICAO, permissao.getDescricao());
+            permissoesDaTela.add(permissaoJson);
+        }
+
+        List<Map<String, Object>> grupos = new ArrayList<>(gruposPorCodigo.values());
+        List<Map<String, Object>> telas = new ArrayList<>();
+        for (Map<String, Object> grupo : grupos) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> telasDoGrupo = (List<Map<String, Object>>) grupo.get(KEY_TELAS);
+            telas.addAll(telasDoGrupo);
+        }
+
+        Map<String, Object> resposta = new LinkedHashMap<>();
+        resposta.put(KEY_GRUPOS, grupos);
+        resposta.put(KEY_TELAS, telas);
+        return resposta;
+    }
+
     public Map<String, Object> atualizarPermissoesDoUsuario(Long idUsuario, List<Map<String, Object>> overrides) {
         UsuarioBean usuario = usuarioDAO.buscarPorId(idUsuario);
         if (usuario == null) {
@@ -212,8 +291,14 @@ public class AdminAccessControlBusiness {
             boolean porRole = idsBasePorRole.contains(permissao.getIdPermissao());
             Boolean override = overrides.get(permissao.getIdPermissao());
 
-            // Regra OR: acesso efetivo pode vir do perfil OU do usuario.
-            boolean permitido = porRole || Boolean.TRUE.equals(override);
+            // User override precedence: if user has an explicit override (true/false),
+            // it wins. Otherwise fallback to role permission.
+            boolean permitido;
+            if (override != null) {
+                permitido = override;
+            } else {
+                permitido = porRole;
+            }
             acoes.put(permissao.getAcaoCodigo(), permitido);
         }
 
@@ -224,6 +309,22 @@ public class AdminAccessControlBusiness {
                 "acoes", acoes,
                 "podeConsultar", acoes.getOrDefault("CONSULTAR", false)
         );
+    }
+
+    public Map<String, Object> excluirTelasCatalogo(List<Long> idsPermissao) {
+        if (idsPermissao == null || idsPermissao.isEmpty()) {
+            throw new IllegalArgumentException("ids obrigatorios");
+        }
+
+        // remover vínculos em roles e usuarios
+        rolePermissaoDAO.excluirPermissoes(idsPermissao);
+        usuarioPermissaoDAO.excluirPermissoes(idsPermissao);
+
+        // deletar as permissoes de tela
+        permissaoTelaDAO.excluirMultiplos(idsPermissao);
+
+        // retornar catálogo atualizado
+        return listarCatalogoAcessos();
     }
 
     public String resolverTelaPorRota(String rota) {
@@ -264,8 +365,14 @@ public class AdminAccessControlBusiness {
             boolean porRole = idsBasePorRole.contains(permissao.getIdPermissao());
             Boolean override = overrides.get(permissao.getIdPermissao());
 
-            // Regra OR: efetivo quando perfil permite ou usuario possui permissao direta.
-            boolean efetivo = porRole || Boolean.TRUE.equals(override);
+            // User override precedence: if user has an explicit override (true/false),
+            // it wins. Otherwise fallback to role permission.
+            boolean efetivo;
+            if (override != null) {
+                efetivo = override;
+            } else {
+                efetivo = porRole;
+            }
 
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("idPermissao", permissao.getIdPermissao());
@@ -294,7 +401,8 @@ public class AdminAccessControlBusiness {
         List<Map<String, Object>> permissoesDiretas = new ArrayList<>();
         for (PermissaoTelaBean permissao : catalogo) {
             Boolean permitidoDireto = overrides.get(permissao.getIdPermissao());
-            if (!Boolean.TRUE.equals(permitidoDireto)) {
+            // include both explicit allows and explicit denies so admin UI can show them
+            if (permitidoDireto == null) {
                 continue;
             }
 
@@ -307,7 +415,9 @@ public class AdminAccessControlBusiness {
             item.put("descricao", permissao.getDescricao());
             item.put("direta", true);
             item.put("porRole", porRole);
-            item.put("efetivo", true);
+            // efetivo segue override when explicit
+            item.put("efetivo", permitidoDireto);
+            item.put("permitido", permitidoDireto);
             permissoesDiretas.add(item);
         }
 

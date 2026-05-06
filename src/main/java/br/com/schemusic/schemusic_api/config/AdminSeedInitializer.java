@@ -46,6 +46,15 @@ public class AdminSeedInitializer implements CommandLineRunner {
     @Value("${app.admin.senha:admin123}")
     private String adminSenha;
 
+    @Value("${app.admin.dev.nome:dev_schemusic}")
+    private String devNome;
+
+    @Value("${app.admin.dev.email:dev_schemusic@schemusic.com}")
+    private String devEmail;
+
+    @Value("${app.admin.dev.senha:dev123}")
+    private String devSenha;
+
     public AdminSeedInitializer(UsuarioDAO usuarioDAO,
                                 RoleDAO roleDAO,
                                 UsuarioRoleDAO usuarioRoleDAO,
@@ -110,18 +119,37 @@ public class AdminSeedInitializer implements CommandLineRunner {
         UsuarioBean existente = usuarioDAO.buscarPorEmail(adminEmail);
         if (existente != null) {
             garantirVinculoAdmin(existente.getIdUsuario());
+        } else {
+            UsuarioBean admin = new UsuarioBean();
+            admin.setNome(adminNome);
+            admin.setEmail(adminEmail);
+            admin.setSenha(passwordEncoder.encode(adminSenha));
+            admin.setIdiomaPadrao("pt-BR");
+            admin.setAtivo(true);
+
+            Long idUsuario = usuarioDAO.inserir(admin);
+            garantirVinculoAdmin(idUsuario);
+        }
+
+        criarOuAtualizarUsuarioDev();
+    }
+
+    private void criarOuAtualizarUsuarioDev() {
+        UsuarioBean existenteDev = usuarioDAO.buscarPorEmail(devEmail);
+        if (existenteDev == null) {
+            UsuarioBean dev = new UsuarioBean();
+            dev.setNome(devNome);
+            dev.setEmail(devEmail);
+            dev.setSenha(passwordEncoder.encode(devSenha));
+            dev.setIdiomaPadrao("pt-BR");
+            dev.setAtivo(true);
+
+            Long idUsuario = usuarioDAO.inserir(dev);
+            garantirVinculoAdmin(idUsuario);
             return;
         }
 
-        UsuarioBean admin = new UsuarioBean();
-        admin.setNome(adminNome);
-        admin.setEmail(adminEmail);
-        admin.setSenha(passwordEncoder.encode(adminSenha));
-        admin.setIdiomaPadrao("pt-BR");
-        admin.setAtivo(true);
-
-        Long idUsuario = usuarioDAO.inserir(admin);
-        garantirVinculoAdmin(idUsuario);
+        garantirVinculoAdmin(existenteDev.getIdUsuario());
     }
 
     private void garantirVinculoAdmin(Long idUsuario) {
